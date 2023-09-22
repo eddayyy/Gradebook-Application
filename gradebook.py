@@ -18,6 +18,7 @@ class Gradebook(object):
             "Import Student Data", MainWindow)
         self.pushButton.setGeometry(QtCore.QRect(10, 10, 150, 40))
         self.pushButton.clicked.connect(self.read_in)
+
         # Add Button
         self.addButton = QtWidgets.QPushButton("Add Student", MainWindow)
         self.addButton.setGeometry(QtCore.QRect(170, 10, 150, 40))
@@ -28,9 +29,15 @@ class Gradebook(object):
         self.deleteButton.setGeometry(QtCore.QRect(330, 10, 150, 40))
         self.deleteButton.clicked.connect(self.delete_student)
 
+        # Export Button
+        self.exportButton = QtWidgets.QPushButton('Export Data', MainWindow)
+        self.exportButton.setGeometry(
+            QtCore.QRect(1040, 10, 150, 40))
+        self.exportButton.clicked.connect(self.write_out)
+
         # Table
         self.tableWidget = QtWidgets.QTableWidget(MainWindow)
-        self.tableWidget.setGeometry(QtCore.QRect(10, 60, 1100, 700))
+        self.tableWidget.setGeometry(QtCore.QRect(10, 60, 1180, 680))
         self.tableWidget.setColumnCount(13)
         self.tableWidget.setHorizontalHeaderLabels([
             'SID', 'FirstName', 'LastName', 'Email',
@@ -61,6 +68,10 @@ class Gradebook(object):
                 for col_index, col_data in enumerate(row_data):
                     self.tableWidget.setItem(
                         row_index, col_index, QTableWidgetItem(str(col_data)))
+
+    def write_out(self):
+        with open(self.output, mode='w', newline='') as f:
+            writer = csv.writer(f)
 
     def add_student(self):
         row_position = self.tableWidget.rowCount()
