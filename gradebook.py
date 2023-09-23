@@ -6,7 +6,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtWidgets import QComboBox, QVBoxLayout, QLabel, QWidget, QSplitter
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QTableWidgetItem, QFileDialog, QMessageBox
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QFont
 from PyQt5.QtCore import Qt
 
 
@@ -134,6 +134,14 @@ class Gradebook(object):
             QtWidgets.QAbstractItemView.AllEditTriggers)
         self.initStats()
 
+        # Listen for changes to the table
+        self.tableWidget.itemChanged.connect(self.on_item_changed)
+
+        # Bold the Column Titles
+        bold_font = QFont()
+        bold_font.setBold(True)
+        self.tableWidget.horizontalHeader().setFont(bold_font)
+
         # Add table to the main layout below the buttons
         main_layout.addWidget(self.tableWidget)
         MainWindow.setCentralWidget(central_widget)
@@ -146,26 +154,31 @@ class Gradebook(object):
     def displayStats(self):
         self.statAnalysis.displayWindow()
 
+    def on_item_changed(self, item):
+        # Check if the changed item is in a grade column
+        if item.column() in range(4, 13):  # Columns 4 to 12 inclusive are grade columns
+            self.calculate_student_grades()
+
     def read_in(self):
-        options = QFileDialog.Options()
-        filePath, _ = QFileDialog.getOpenFileName(
-            None, "Open CSV", "", "CSV Files (*.csv);;All Files (*)", options=options)
-        if not filePath:  # If no file is selected, return
-            return
+        # options = QFileDialog.Options()
+        # filePath, _ = QFileDialog.getOpenFileName(
+        #     None, "Open CSV", "", "CSV Files (*.csv);;All Files (*)", options=options)
+        # if not filePath:  # If no file is selected, return
+        #     return
 
-        # Confirmation Dialog
-        if self.tableWidget.rowCount() != 0:
-            msgBox = QMessageBox()
-            msgBox.setIcon(QMessageBox.Question)
-            msgBox.setText(
-                "Do you want to clear the existing data in the table?")
-            msgBox.setWindowTitle("Confirmation")
-            msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        # # Confirmation Dialog
+        # if self.tableWidget.rowCount() != 0:
+        #     msgBox = QMessageBox()
+        #     msgBox.setIcon(QMessageBox.Question)
+        #     msgBox.setText(
+        #         "Do you want to clear the existing data in the table?")
+        #     msgBox.setWindowTitle("Confirmation")
+        #     msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
 
-            returnValue = msgBox.exec()
-            if returnValue == QMessageBox.Yes:
-                # Clear the existing rows in the table
-                self.tableWidget.setRowCount(0)
+        #     returnValue = msgBox.exec()
+        #     if returnValue == QMessageBox.Yes:
+        #         # Clear the existing rows in the table
+        #         self.tableWidget.setRowCount(0)
 
         with open('Student_data.csv', mode='r') as f:
             csv_readin = csv.reader(f)
@@ -212,14 +225,43 @@ class Gradebook(object):
 
         for row_index in range(self.tableWidget.rowCount()):
             scores = {
-                'HW': [float(self.tableWidget.item(row_index, i).text()) for i in range(4, 7)],
-                'Quiz': [float(self.tableWidget.item(row_index, i).text()) for i in range(7, 11)],
-                'Midterm': float(self.tableWidget.item(row_index, 11).text()),
-                'Final': float(self.tableWidget.item(row_index, 12).text())
+                'HW': [],
+                'Quiz': [],
+                'Midterm': 0,
+                'Final': 0
             }
 
-            hw_average = sum(scores['HW']) / len(scores['HW'])
-            quiz_average = sum(scores['Quiz']) / len(scores['Quiz'])
+            # For Homework and Quiz scores
+            for i in range(4, 11):  # Columns 4 to 10 inclusive
+                item = self.tableWidget.item(row_index, i)
+                if item:
+                    value = item.text()
+                    if value:  # Check if the text is not empty
+                        try:
+                            value = float(value)
+                            if i < 7:  # Columns 4, 5, 6 for HW
+                                scores['HW'].append(value)
+                            else:  # Columns 7, 8, 9, 10 for Quiz
+                                scores['Quiz'].append(value)
+                        except ValueError:
+                            continue  # Skip non-numeric values
+
+            # For Midterm and Final scores
+            for key, col in {'Midterm': 11, 'Final': 12}.items():
+                item = self.tableWidget.item(row_index, col)
+                if item:
+                    value = item.text()
+                    if value:  # Check if the text is not empty
+                        try:
+                            scores[key] = float(value)
+                        except ValueError:
+                            continue  # Skip non-numeric values
+
+            # Calculate averages and final score
+            hw_average = sum(scores['HW']) / \
+                len(scores['HW']) if scores['HW'] else 0
+            quiz_average = sum(scores['Quiz']) / \
+                len(scores['Quiz']) if scores['Quiz'] else 0
 
             final_score = (hw_average * weights['HW'] +
                            quiz_average * weights['Quiz'] +
@@ -228,6 +270,7 @@ class Gradebook(object):
 
             final_score = round(final_score, 2)
 
+            # Determine the final grade
             if final_score >= 90:
                 grade = 'A'
             elif final_score >= 80:
@@ -236,11 +279,12 @@ class Gradebook(object):
                 grade = 'C'
             elif final_score >= 60:
                 grade = 'D'
-            elif final_score >= 50:
+            else:
                 grade = 'F'
 
+            # Update the table with the final score and grade
             self.tableWidget.setItem(
-                row_index, 13, QTableWidgetItem(f'{str(final_score)}%'))
+                row_index, 13, QTableWidgetItem(f'{final_score}%'))
             self.tableWidget.setItem(row_index, 14, QTableWidgetItem(grade))
 
     def reset_search(self):
