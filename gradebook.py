@@ -1,8 +1,63 @@
 import csv
 import sys
+import matplotlib.pyplot as plt
+
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from PyQt5.QtWidgets import QComboBox, QVBoxLayout, QLabel, QWidget, QSplitter
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QTableWidgetItem, QFileDialog, QMessageBox
 from PyQt5.QtGui import QColor
+from PyQt5.QtCore import Qt
+
+
+class StatisticalAnalysis:
+    def __init__(self, tableWidget):
+        self.tableWidget = tableWidget
+        self.setupUI()
+
+    def setupUI(self):
+        self.statAnalysis = QtWidgets.QMainWindow()
+        self.statAnalysis.setObjectName('StatisticalAnalysisWindow')
+        self.statAnalysis.resize(900, 600)
+        self.statAnalysis.setWindowTitle('Statistical Analysis')
+        self.calculateMean
+
+    def displayWindow(self):
+        self.statAnalysis.show()
+
+    def calculateMean(self, column_index):
+        total = 0
+        count = 0
+        for row_index in range(self.tableWidget.rowCount()):
+            item = self.tableWidget.item(row_index, column_index)
+            if item and item.text():
+                try:
+                    value = float(item.text())
+                    total += value
+                    count += 1
+                except ValueError:
+                    return total / count if count > 0 else 0
+
+    def calculateMedian(self, column_index):
+        # Collect values from tableWidget
+        values = []
+        for row_index in range(self.tableWidget.rowCount()):
+            item = self.tableWidget.item(row_index, column_index)
+            if item and item.text():
+                try:
+                    value = float(item.text())
+                    values.append(value)
+                except ValueError:
+                    continue
+
+        # Find the median
+        values.sort()
+        size = len(values)
+        if size % 2 == 1:
+            return values[size//2]
+        elif size % 2 == 0:
+            middle1, middle2 = values[size//2 - 1], values[size//2]
+            return (middle1 + middle2) / 2
 
 
 class Gradebook(object):
@@ -17,40 +72,52 @@ class Gradebook(object):
 
         # Central Widget
         central_widget = QtWidgets.QWidget(MainWindow)
-        main_layout = QtWidgets.QGridLayout(central_widget)  # Main layout
+        main_layout = QtWidgets.QVBoxLayout(central_widget)  # Main layout
 
-        # Buttons Layout
-        buttons_layout = QtWidgets.QHBoxLayout()
+        # File Operations Toolbar
+        file_toolbar = QtWidgets.QToolBar("File Operations", MainWindow)
+        MainWindow.addToolBar(file_toolbar)
 
-        # Import Button
-        self.pushButton = QtWidgets.QPushButton("Import Data")
-        self.pushButton.clicked.connect(self.read_in)
-        buttons_layout.addWidget(self.pushButton)
+        # Import Action
+        import_action = QtWidgets.QAction("Import Data", MainWindow)
+        import_action.triggered.connect(self.read_in)
+        file_toolbar.addAction(import_action)
 
-        # Add Button
-        self.addButton = QtWidgets.QPushButton("Add Student")
-        self.addButton.clicked.connect(self.add_student)
-        buttons_layout.addWidget(self.addButton)
+        # Export Action
+        export_action = QtWidgets.QAction('Export Data', MainWindow)
+        export_action.triggered.connect(self.write_out)
+        file_toolbar.addAction(export_action)
 
-        # Delete Button
-        self.deleteButton = QtWidgets.QPushButton("Delete Student")
-        self.deleteButton.clicked.connect(self.delete_student)
-        buttons_layout.addWidget(self.deleteButton)
+        # Student Operations Toolbar
+        student_toolbar = QtWidgets.QToolBar("Student Operations", MainWindow)
+        MainWindow.addToolBar(student_toolbar)
 
-        # Export Button
-        self.exportButton = QtWidgets.QPushButton('Export Data')
-        self.exportButton.clicked.connect(self.write_out)
-        buttons_layout.addWidget(self.exportButton)
+        # Add Student Action
+        add_action = QtWidgets.QAction("Add Student", MainWindow)
+        add_action.triggered.connect(self.add_student)
+        student_toolbar.addAction(add_action)
 
-        # Search Button and Line Edit
+        # Delete Student Action
+        delete_action = QtWidgets.QAction("Delete Student", MainWindow)
+        delete_action.triggered.connect(self.delete_student)
+        student_toolbar.addAction(delete_action)
+
+        # Search Layout
+        search_layout = QtWidgets.QHBoxLayout()
         self.searchLineEdit = QtWidgets.QLineEdit()
+        self.searchLineEdit.setAlignment(Qt.AlignRight)  # Right-align text
+        self.searchLineEdit.setLayoutDirection(
+            Qt.RightToLeft)  # Set layout direction to RTL
+        search_layout.addWidget(self.searchLineEdit)
         self.searchButton = QtWidgets.QPushButton("Search by SID")
         self.searchButton.clicked.connect(self.search_by_sid)
-        buttons_layout.addWidget(self.searchLineEdit)
-        buttons_layout.addWidget(self.searchButton)
+        search_layout.addWidget(self.searchButton)
+        main_layout.addLayout(search_layout)
 
-        # Add buttons layout to the main layout at the top
-        main_layout.addLayout(buttons_layout, 0, 0, 1, 2)
+        # Statistical Analysis Action
+        stat_action = QtWidgets.QAction('Statistical Analysis', MainWindow)
+        stat_action.triggered.connect(self.displayStats)
+        student_toolbar.addAction(stat_action)
 
         # Table
         self.tableWidget = QtWidgets.QTableWidget()
@@ -65,10 +132,19 @@ class Gradebook(object):
             QtWidgets.QAbstractItemView.SelectRows)
         self.tableWidget.setEditTriggers(
             QtWidgets.QAbstractItemView.AllEditTriggers)
+        self.initStats()
 
         # Add table to the main layout below the buttons
-        main_layout.addWidget(self.tableWidget, 1, 0, 1, 2)
+        main_layout.addWidget(self.tableWidget)
         MainWindow.setCentralWidget(central_widget)
+
+    def initStats(self):
+        self.statAnalysis = StatisticalAnalysis(
+            self.tableWidget  # Pass the tableWidget object
+        )
+
+    def displayStats(self):
+        self.statAnalysis.displayWindow()
 
     def read_in(self):
         options = QFileDialog.Options()
@@ -100,6 +176,7 @@ class Gradebook(object):
                     self.tableWidget.setItem(
                         row_index, col_index, QTableWidgetItem(str(col_data)))
             self.calculate_student_grades()
+        self.file_load = True
 
     def write_out(self):
         with open(self.output, mode='w', newline='') as f:
@@ -193,7 +270,7 @@ class Gradebook(object):
                         row_index, col_index).setBackground(highlight_color)
 
                 QMessageBox.information(
-                    self.tableWidget, "Student Found", f"Student with SID {sid} has been found!")
+                    self.tableWidget, "Student Search", f"Student with SID {sid} has been found!")
 
                 self.tableWidget.setRowHeight(
                     row_index, self.tableWidget.rowHeight(row_index) + 10)
@@ -201,6 +278,9 @@ class Gradebook(object):
                 # Update the index of the currently selected row
                 self.prev_selected_row = row_index
                 return
+        QMessageBox.information(
+            self.tableWidget, "Student Search", f"Student with SID {sid} was NOT found!")
+        return
 
 
 if __name__ == "__main__":
