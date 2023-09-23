@@ -1,156 +1,11 @@
 import csv
 import sys
-import matplotlib.pyplot as plt
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from PyQt5.QtWidgets import QComboBox, QVBoxLayout, QLabel, QWidget, QSplitter
+from statistics_analysis import StatisticalAnalysis
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QTableWidgetItem, QFileDialog, QMessageBox, QHBoxLayout
+from PyQt5.QtWidgets import QTableWidgetItem, QFileDialog, QMessageBox
 from PyQt5.QtGui import QColor, QFont
 from PyQt5.QtCore import Qt
-
-
-class StatisticalAnalysis:
-    def __init__(self, tableWidget):
-        self.tableWidget = tableWidget
-        self.setupUI()
-
-    def setupUI(self):
-        self.statAnalysis = QtWidgets.QMainWindow()
-        self.statAnalysis.setObjectName('StatisticalAnalysisWindow')
-        self.statAnalysis.resize(1280, 960)
-        self.statAnalysis.setWindowTitle('Statistical Analysis')
-
-        central_widget = QWidget()
-        # Main vertical layout for the entire window
-        main_layout = QVBoxLayout(central_widget)
-
-        # Horizontal Layout for Drop down and Statistics
-        hbox = QHBoxLayout()  # Horizontal layout for dropdown and statistics
-        hbox.setSpacing(10)  # Set spacing to 10
-        hbox.setContentsMargins(10, 10, 10, 10)  # Set margins to 10
-
-        # Drop down menu
-        self.comboBox = QComboBox()
-        self.comboBox.addItems(
-            ['HW1', 'HW2', 'HW3', 'Quiz1', 'Quiz2', 'Quiz3', 'Quiz4', 'MidtermExam', 'FinalExam'])
-        self.comboBox.currentIndexChanged.connect(
-            self.updateStatisticsAndGraph)
-        hbox.addWidget(self.comboBox)
-
-        # Statistics
-        self.statisticsLabel = QLabel()
-        hbox.addWidget(self.statisticsLabel)
-
-        # Add horizontal layout to the main vertical layout
-        main_layout.addLayout(hbox)
-
-        # Graph
-        self.figure, self.ax = plt.subplots()
-        self.canvas = FigureCanvas(self.figure)
-        # Add graph to the main vertical layout below the hbox
-        main_layout.addWidget(self.canvas)
-
-        # Set central widget of the main window
-        self.statAnalysis.setCentralWidget(central_widget)
-
-    def displayWindow(self):
-        self.statAnalysis.show()
-
-    def updateStatisticsAndGraph(self):
-        # Adjust index according to your table
-        column_index = self.comboBox.currentIndex() + 4
-        # Calculate statistics
-        mean = self.calculateMean(column_index)
-        if mean is None:
-            mean = "No Data Available"
-        median = self.calculateMedian(column_index)
-        if median is None:
-            median = "No Data Available"
-
-        # Set font size for the statistics label
-        font = QFont()
-        font.setPointSize(14)  # Set the desired font size
-        self.statisticsLabel.setFont(font)
-
-        # Update statistics label
-        self.statisticsLabel.setText(f'Mean: {mean}\nMedian: {median}\n')
-
-       # Update graph
-        self.ax.clear()
-        values = self.getValuesFromColumn(column_index)
-
-        # Enhance Histogram Appearance
-        self.ax.hist(values, bins=10, color='skyblue',
-                     edgecolor='black', label='Grades')  # Adjust as needed
-
-        # Add a Title
-        self.ax.set_title('Distribution of Student Grades',
-                          fontsize=18, fontweight='bold')
-
-        # Add Grid Lines
-        self.ax.grid(True, linestyle='--', alpha=0.7)
-
-        # Customize Axis Labels
-        self.ax.set_xlabel('Student Grades', fontsize=16, fontweight='bold')
-        self.ax.set_ylabel('Student Count', fontsize=16, fontweight='bold')
-
-        # Customize Ticks
-        self.ax.tick_params(axis='both', which='major', labelsize=10)
-
-        # If you want to show the legend uncomment the next line
-        self.ax.legend(loc='upper right')
-
-        self.canvas.draw()
-
-    def getValuesFromColumn(self, column_index):
-        values = []
-        for row_index in range(self.tableWidget.rowCount()):
-            item = self.tableWidget.item(row_index, column_index)
-            if item and item.text():
-                try:
-                    value = float(item.text())
-                    values.append(value)
-                except ValueError:
-                    continue  # Skip non-numeric values
-        return values
-
-    def calculateMean(self, column_index):
-        total = 0
-        count = 0
-        for row_index in range(self.tableWidget.rowCount()):
-            item = self.tableWidget.item(row_index, column_index)
-            if item and item.text():
-                try:
-                    value = float(item.text())
-                    total += value
-                    count += 1
-                except ValueError:
-                    continue
-        return round(total / count, 2) if count > 0 else None
-
-    def calculateMedian(self, column_index):
-        # Collect values from tableWidget
-        values = []
-        for row_index in range(self.tableWidget.rowCount()):
-            item = self.tableWidget.item(row_index, column_index)
-            if item and item.text():
-                try:
-                    value = float(item.text())
-                    values.append(value)
-                except ValueError:
-                    continue
-
-        # Find the median
-        values.sort()
-        size = len(values)
-        if size == 0:
-            return None
-        elif size % 2 == 1:
-            return values[size//2]
-        elif size % 2 == 0:
-            middle1, middle2 = values[size//2 - 1], values[size//2]
-            return (middle1 + middle2) / 2
 
 
 class Gradebook(object):
@@ -253,25 +108,25 @@ class Gradebook(object):
             self.calculate_student_grades()
 
     def read_in(self):
-        # options = QFileDialog.Options()
-        # filePath, _ = QFileDialog.getOpenFileName(
-        #     None, "Open CSV", "", "CSV Files (*.csv);;All Files (*)", options=options)
-        # if not filePath:  # If no file is selected, return
-        #     return
+        options = QFileDialog.Options()
+        filePath, _ = QFileDialog.getOpenFileName(
+            None, "Open CSV", "", "CSV Files (*.csv);;All Files (*)", options=options)
+        if not filePath:  # If no file is selected, return
+            return
 
-        # # Confirmation Dialog
-        # if self.tableWidget.rowCount() != 0:
-        #     msgBox = QMessageBox()
-        #     msgBox.setIcon(QMessageBox.Question)
-        #     msgBox.setText(
-        #         "Do you want to clear the existing data in the table?")
-        #     msgBox.setWindowTitle("Confirmation")
-        #     msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        # Confirmation Dialog
+        if self.tableWidget.rowCount() != 0:
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Question)
+            msgBox.setText(
+                "Do you want to clear the existing data in the table?")
+            msgBox.setWindowTitle("Confirmation")
+            msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
 
-        #     returnValue = msgBox.exec()
-        #     if returnValue == QMessageBox.Yes:
-        #         # Clear the existing rows in the table
-        #         self.tableWidget.setRowCount(0)
+            returnValue = msgBox.exec()
+            if returnValue == QMessageBox.Yes:
+                # Clear the existing rows in the table
+                self.tableWidget.setRowCount(0)
 
         with open('Student_data.csv', mode='r') as f:
             csv_readin = csv.reader(f)
