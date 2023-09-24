@@ -1,24 +1,28 @@
 import csv
 import sys
+
 import numpy as np
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QColor, QFont
+from PyQt5.QtWidgets import (
+    QDialog,
+    QFileDialog,
+    QLineEdit,
+    QMessageBox,
+    QInputDialog,
+    QTableWidgetItem,
+)
 
 from statistics_analysis import StatisticalAnalysis
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QTableWidgetItem, QFileDialog, QMessageBox
-from PyQt5.QtGui import QColor, QFont
-from PyQt5.QtCore import Qt
+from student_dialogue import StudentDialog
 
 
 class Gradebook(object):
-    def __init__(self):
-        self.output = 'exported_student_data.csv'
-        self.prev_selected_row = -1  # Initialize to -1 as no row is selected initially
-        self.tableBackUp = []
-
     # ------------------- Setup/UI Initialization Methods -------------------
     def __init__(self):
         self.output = 'exported_student_data.csv'
-        self.prev_selected_row = -1  # Initialize to -1 as no row is selected initially
+        self.table_backup = []
 
     def setupUi(self, MainWindow):
         self.initializeMainWindow(MainWindow)
@@ -134,14 +138,14 @@ class Gradebook(object):
 
     def calculateStudentGrades(self):
         for row_index in range(self.tableWidget.rowCount()):
-            scores = self.retrievveScores(row_index)
+            scores = self.retrieveScores(row_index)
             hw_average, quiz_average = self.calculateAverages(scores)
             final_score = self.calculateFinalScore(
                 hw_average, quiz_average, scores)
             grade = self.determineFinalGrade(final_score)
             self.updateTableWithGrades(row_index, final_score, grade)
 
-    def retrievveScores(self, row_index):
+    def retrieveScores(self, row_index):
         scores = {'HW': [], 'Quiz': [], 'Midterm': 0, 'Final': 0}
 
         # For Homework and Quiz scores
@@ -225,7 +229,7 @@ class Gradebook(object):
                 # Clear the existing rows in the table
                 self.tableWidget.setRowCount(0)
 
-        with open('Student_data.csv', mode='r') as f:
+        with open(filePath, mode='r') as f:
             csv_readin = csv.reader(f)
             next(csv_readin)  # Skip the header row
             for row_index, row_data in enumerate(csv_readin):
@@ -266,17 +270,60 @@ class Gradebook(object):
 
     def addStudent(self):
         self.resetSearch()
-        row_position = self.tableWidget.rowCount()
-        select_indeces = self.tableWidget.insertRow(row_position)
+        dialog = StudentDialog(self.tableWidget)
+        result = dialog.exec_()
+        if result == QDialog.Accepted:
+            details_list = dialog.getDetails()
+            row_position = self.tableWidget.rowCount()
+            self.tableWidget.insertRow(row_position)
+
+            # Populate the new row with the entered details
+            for col_index, detail in enumerate(details_list):
+                self.tableWidget.setItem(row_position, col_index, QTableWidgetItem(
+                    detail) if detail else QTableWidgetItem('-'))
+
+            # Check if any of the first four details are missing
+            if any(not detail for detail in details_list[:4]):
+                QMessageBox.information(self.tableWidget, "Add Student",
+                                        "Incomplete Details Provided!\n"
+                                        "The provided details have been added, but please note that some information is missing. "
+                                        "Consider updating the student's information at your earliest convenience.")
+            else:
+                QMessageBox.information(
+                    self.tableWidget, "Add Student", "Student Successfully Added")
 
     def deleteStudent(self):
-        self.resetSearch()
         select_indices = self.tableWidget.selectionModel().selectedRows()
-        for index in sorted(select_indices, reverse=True):
-            self.tableWidget.removeRow(index.row())
+
+        # If no rows are selected, display a message and return
+        if not select_indices:
+            QMessageBox.information(
+                self.tableWidget, "Delete Student", "Please select a student to delete.")
+            return
+
+        # Confirmation Dialog before deleting
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Question)
+        msgBox.setText(
+            "Are you sure you want to delete the selected student(s)?")
+        msgBox.setWindowTitle("Confirmation")
+        msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+
+        returnValue = msgBox.exec()
+        if returnValue == QMessageBox.Yes:  # If user confirms, delete the student
+            for index in sorted(select_indices, reverse=True):
+                # Remove from the table
+                self.tableWidget.removeRow(index.row())
+                # Remove from the backup (if present)
+                if self.table_backup:
+                    # Assuming SID is in the first column
+                    sid = self.table_backup[index.row()][0]
+                    self.table_backup = [
+                        student for student in self.table_backup if student[0] != sid]
 
     # ------------------- Search and Display Methods -------------------
-    def focusSearch(self, sid):
+
+    def backupTable(self):
         # Store the current state of the table
         self.table_backup = []
         for row_index in range(self.tableWidget.rowCount()):
@@ -286,6 +333,8 @@ class Gradebook(object):
                 row_data[col_index] = item.text() if item else ""
             self.table_backup.append(row_data)
 
+    def focusSearch(self, sid):
+        self.backupTable()
         # Clear the table
         self.tableWidget.setRowCount(0)
 

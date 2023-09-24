@@ -80,15 +80,10 @@ class StatisticalAnalysis:
         font.setPointSize(14)
         self.statisticsLabel.setFont(font)
         self.statisticsLabel.setText(
-            f'Maximum Score: {maxVal}{:<10} '
-            f'Minimum Score: {minVal}\n'
-            f'Mean: {mean} '
-            f'Median: {median} '
-            f'Standard Deviation: {std}\n'
-            f'Passing: {passing} ({passingRate}) '
-            f'Failing: {failing} ({failingRate})\n'
-            f'Missing Assignments: {missing_assignments}\n'
-
+            f'Maximum Score: {maxVal:<30} Minimum Score: {minVal:<30}\n'
+            f'Mean: {mean:<30} Median: {median:<30}\n'
+            f'Standard Deviation: {std:<30} Passing: {passing} ({passingRate:<30})\n'
+            f'Failing: {failing} ({failingRate:<30}) Missing Assignments: {missing_assignments:<30}\n'
         )
 
     def updateGraph(self, column_index):
