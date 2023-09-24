@@ -136,6 +136,8 @@ class Gradebook(object):
 
     def displayStats(self):
         self.statAnalysis.displayWindow()
+        self.statAnalysis.statAnalysis.activateWindow()
+        self.statAnalysis.statAnalysis.raise_()
 
     # ------------------- Mathematical/Calculation Methods -------------------
 
