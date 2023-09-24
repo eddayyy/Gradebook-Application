@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-
+import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtWidgets import QComboBox, QVBoxLayout, QLabel, QWidget, QHBoxLayout
 from PyQt5 import QtWidgets
@@ -11,6 +11,7 @@ class StatisticalAnalysis:
         self.tableWidget = tableWidget
         self.setupUI()
 
+    # ------------------- Setup/UI Initialization Methods -------------------
     def setupUI(self):
         self.initializeMainWindow()
         central_widget = QWidget()
@@ -54,54 +55,86 @@ class StatisticalAnalysis:
         self.canvas = FigureCanvas(self.figure)
         main_layout.addWidget(self.canvas)
 
-    def displayWindow(self):
-        self.statAnalysis.show()
+    # ------------------- Mathematical/Calculation Methods -------------------
 
     def updateStatisticsAndGraph(self):
-        # Adjust index according to your table
         column_index = self.comboBox.currentIndex() + 4
+        self.updateStatistics(column_index)
+        self.updateGraph(column_index)
+
+    def updateStatistics(self, column_index):
         # Calculate statistics
-        mean = self.calculateMean(column_index)
-        if mean is None:
-            mean = "No Data Available"
-        median = self.calculateMedian(column_index)
-        if median is None:
-            median = "No Data Available"
+        mean = self.calculateStats(column_index, 'mean')
+        median = self.calculateStats(column_index, 'median')
+        std = self.calculateStats(column_index, 'std')
+        passing, failing, passingRate, failingRate = self.passFailingRate(
+            column_index)
+        missing_assignments = self.getMissingAssignments(column_index)
+        minVal, maxVal = self.getMinMax(column_index)
 
         # Set font size for the statistics label
         font = QFont()
-        font.setPointSize(14)  # Set the desired font size
+        font.setPointSize(14)
         self.statisticsLabel.setFont(font)
+        self.statisticsLabel.setText(
+            f'Mean: {mean}\n'
+            f'Median: {median}\n'
+            f'Standard Deviation: {std}\n'
+            f'Passing: {passing} ({passingRate})\n'
+            f'Failing: {failing} ({failingRate})\n'
+            f'Missing Assignments: {missing_assignments}\n'
+            f'Max: {maxVal}\n'
+            f'Min: {minVal}\n'
+        )
 
-        # Update statistics label
-        self.statisticsLabel.setText(f'Mean: {mean}\nMedian: {median}\n')
-
-       # Update graph
+    def updateGraph(self, column_index):
         self.ax.clear()
         values = self.getValuesFromColumn(column_index)
-
-        # Enhance Histogram Appearance
         self.ax.hist(values, bins=10, color='skyblue',
-                     edgecolor='black', label='Grades')  # Adjust as needed
+                     edgecolor='black', label='Grades')
+        self.customizeGraphAppearance()
+        self.canvas.draw()
 
-        # Add a Title
+    def customizeGraphAppearance(self):
         self.ax.set_title('Distribution of Student Grades',
                           fontsize=18, fontweight='bold')
 
-        # Add Grid Lines
         self.ax.grid(True, linestyle='--', alpha=0.7)
 
-        # Customize Axis Labels
         self.ax.set_xlabel('Student Grades', fontsize=16, fontweight='bold')
         self.ax.set_ylabel('Student Count', fontsize=16, fontweight='bold')
 
-        # Customize Ticks
         self.ax.tick_params(axis='both', which='major', labelsize=10)
-
-        # If you want to show the legend uncomment the next line
         self.ax.legend(loc='upper right')
 
-        self.canvas.draw()
+    def calculateStats(self, column_index, stat_type):
+        values = self.getValuesFromColumn(column_index)
+        if not values:  # If the list is empty, return None
+            return "No Available Data"
+        stat_function = getattr(np, stat_type)
+        return round(stat_function(values), 2)
+
+    def passFailingRate(self, column_index):
+        values = self.getValuesFromColumn(column_index)
+        passing, failing = 0, 0
+        if not values:
+            return "No Available Data"
+        for val in values:
+            if val < 60:
+                failing += 1
+            else:
+                passing += 1
+
+        total = passing + failing
+
+        passing_rate = passing / total
+        failing_rate = failing / total
+
+        passing_rate = f"{passing_rate * 100:.2f}%"
+        failing_rate = f"{failing_rate * 100:.2f}%"
+        return passing, failing, passing_rate, failing_rate
+
+    # ------------------- Data Retrieval Methods -------------------
 
     def getValuesFromColumn(self, column_index):
         values = []
@@ -115,42 +148,35 @@ class StatisticalAnalysis:
                     continue  # Skip non-numeric values
         return values
 
-    def calculateMean(self, column_index):
-        total = 0
-        count = 0
+    def getMissingAssignments(self, column_index):
+        missing = 0
+        for row_index in range(self.tableWidget.rowCount()):
+            item = self.tableWidget.item(row_index, column_index)
+            if item and item.text() == '-' or '':
+                missing += 1
+        return missing
+
+    def getMinMax(self, column_index):
+        minVal = float('inf')  # recall A-B Pruning
+        maxVal = float('-inf')
+        temp = 0
         for row_index in range(self.tableWidget.rowCount()):
             item = self.tableWidget.item(row_index, column_index)
             if item and item.text():
                 try:
-                    value = float(item.text())
-                    total += value
-                    count += 1
-                except ValueError:
-                    continue
-        return round(total / count, 2) if count > 0 else None
-
-    def calculateMedian(self, column_index):
-        # Collect values from tableWidget
-        values = []
-        for row_index in range(self.tableWidget.rowCount()):
-            item = self.tableWidget.item(row_index, column_index)
-            if item and item.text():
-                try:
-                    value = float(item.text())
-                    values.append(value)
-                except ValueError:
+                    temp = float(item.text())
+                    maxVal = max(temp, maxVal)
+                    minVal = min(temp, minVal)
+                except ValueError:  # Skip non-numeric values
                     continue
 
-        # Find the median
-        values.sort()
-        size = len(values)
-        if size == 0:
-            return None
-        elif size % 2 == 1:
-            return values[size//2]
-        elif size % 2 == 0:
-            middle1, middle2 = values[size//2 - 1], values[size//2]
-            return (middle1 + middle2) / 2
+        # Return None if no numeric value is found in the column
+        if minVal == float('inf') or maxVal == float('-inf'):
+            return "No Available Data"
 
-    def calculateStandardDeviation(self):
-        
+        return minVal, maxVal
+
+    # ------------------- Display Methods -------------------
+
+    def displayWindow(self):
+        self.statAnalysis.show()

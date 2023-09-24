@@ -1,5 +1,5 @@
 ﻿SID,FirstName,LastName,Email,HW1,HW2,HW3,Quiz1,Quiz2,Quiz3,Quiz4,MidtermExam,FinalExam
-12314,John,Doe,jdoe@univ.edu,100,80,10,100,90,60,100,80,68
+12314,John,Doe,jdoe@univ.edu,,,10,100,90,60,100,80,68
 33213,Rachel,Tse,rachel@univ.edu,90,50,30,90,65,90,80,70,69
 44612,Jennifer,Smith,Jsmith@univ.edu,90,60,0,90,55,90,90,80,83
 37512,Joseph,Lee,Jlee@univ.edu,80,70,100,80,75,50,80,65,71

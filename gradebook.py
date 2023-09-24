@@ -1,5 +1,6 @@
 import csv
 import sys
+import numpy as np
 
 from statistics_analysis import StatisticalAnalysis
 from PyQt5 import QtWidgets
@@ -13,61 +14,84 @@ class Gradebook(object):
         self.output = 'exported_student_data.csv'
         self.prev_selected_row = -1  # Initialize to -1 as no row is selected initially
 
+    # ------------------- Setup/UI Initialization Methods -------------------
+    def __init__(self):
+        self.output = 'exported_student_data.csv'
+        self.prev_selected_row = -1  # Initialize to -1 as no row is selected initially
+
     def setupUi(self, MainWindow):
+        self.initializeMainWindow(MainWindow)
+        central_widget = QtWidgets.QWidget(MainWindow)
+        main_layout = QtWidgets.QVBoxLayout(central_widget)  # Main layout
+
+        # Import / Export Buttons
+        self.setupFileToolbar(MainWindow, main_layout)
+        # Add, Delete, and Search Buttons
+        self.setupStudentToolbar(MainWindow, main_layout)
+        # Search Text Entry
+        self.setupSearchLayout(main_layout)
+        # Data Representation
+        self.setupTable(main_layout)
+        # Initialize StatisticalAnalysis class
+        self.initStats()
+
+        MainWindow.setCentralWidget(central_widget)
+
+    def initializeMainWindow(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1920, 1080)
         MainWindow.setWindowTitle("My Gradebook")
 
-        # Central Widget
-        central_widget = QtWidgets.QWidget(MainWindow)
-        main_layout = QtWidgets.QVBoxLayout(central_widget)  # Main layout
-
-        # File Operations Toolbar
+    def setupFileToolbar(self, MainWindow, main_layout):
         file_toolbar = QtWidgets.QToolBar("File Operations", MainWindow)
         MainWindow.addToolBar(file_toolbar)
 
-        # Import Action
+        # Import Button
         import_action = QtWidgets.QAction("Import Data", MainWindow)
         import_action.triggered.connect(self.read_in)
         file_toolbar.addAction(import_action)
 
-        # Export Action
+        # Export Button
         export_action = QtWidgets.QAction('Export Data', MainWindow)
         export_action.triggered.connect(self.write_out)
         file_toolbar.addAction(export_action)
 
-        # Student Operations Toolbar
+    def setupStudentToolbar(self, MainWindow, main_layout):
         student_toolbar = QtWidgets.QToolBar("Student Operations", MainWindow)
         MainWindow.addToolBar(student_toolbar)
 
-        # Add Student Action
+        # Add Button
         add_action = QtWidgets.QAction("Add Student", MainWindow)
         add_action.triggered.connect(self.add_student)
         student_toolbar.addAction(add_action)
 
-        # Delete Student Action
+        # Delete Button
         delete_action = QtWidgets.QAction("Delete Student", MainWindow)
         delete_action.triggered.connect(self.delete_student)
         student_toolbar.addAction(delete_action)
 
-        # Search Layout
+        # Search Button
+        stat_action = QtWidgets.QAction('Statistical Analysis', MainWindow)
+        stat_action.triggered.connect(self.displayStats)
+        student_toolbar.addAction(stat_action)
+
+    def setupSearchLayout(self, main_layout):
+        # Search Text Entry
         search_layout = QtWidgets.QHBoxLayout()
         self.searchLineEdit = QtWidgets.QLineEdit()
         self.searchLineEdit.setAlignment(Qt.AlignRight)  # Right-align text
         self.searchLineEdit.setLayoutDirection(
             Qt.RightToLeft)  # Set layout direction to RTL
         search_layout.addWidget(self.searchLineEdit)
+
         self.searchButton = QtWidgets.QPushButton("Search by SID")
         self.searchButton.clicked.connect(self.search_by_sid)
         search_layout.addWidget(self.searchButton)
+
         main_layout.addLayout(search_layout)
 
-        # Statistical Analysis Action
-        stat_action = QtWidgets.QAction('Statistical Analysis', MainWindow)
-        stat_action.triggered.connect(self.displayStats)
-        student_toolbar.addAction(stat_action)
-
-        # Table
+    def setupTable(self, main_layout):
+        # Table Data
         self.tableWidget = QtWidgets.QTableWidget()
         self.tableWidget.setColumnCount(15)
         self.tableWidget.setHorizontalHeaderLabels([
@@ -80,19 +104,13 @@ class Gradebook(object):
             QtWidgets.QAbstractItemView.SelectRows)
         self.tableWidget.setEditTriggers(
             QtWidgets.QAbstractItemView.AllEditTriggers)
-        self.initStats()
 
-        # Listen for changes to the table
-        self.tableWidget.itemChanged.connect(self.on_item_changed)
-
-        # Bold the Column Titles
         bold_font = QFont()
         bold_font.setBold(True)
         self.tableWidget.horizontalHeader().setFont(bold_font)
 
-        # Add table to the main layout below the buttons
+        self.tableWidget.itemChanged.connect(self.on_item_changed)
         main_layout.addWidget(self.tableWidget)
-        MainWindow.setCentralWidget(central_widget)
 
     def initStats(self):
         self.statAnalysis = StatisticalAnalysis(
@@ -102,11 +120,79 @@ class Gradebook(object):
     def displayStats(self):
         self.statAnalysis.displayWindow()
 
-    def on_item_changed(self, item):
-        # Check if the changed item is in a grade column
-        if item.column() in range(4, 13):  # Columns 4 to 12 inclusive are grade columns
-            self.calculate_student_grades()
+    # ------------------- Mathematical/Calculation Methods -------------------
 
+    def calculate_student_grades(self):
+        for row_index in range(self.tableWidget.rowCount()):
+            scores = self.retrieve_scores(row_index)
+            hw_average, quiz_average = self.calculate_averages(scores)
+            final_score = self.calculate_final_score(
+                hw_average, quiz_average, scores)
+            grade = self.determine_final_grade(final_score)
+            self.update_table_with_grades(row_index, final_score, grade)
+
+    def retrieve_scores(self, row_index):
+        scores = {'HW': [], 'Quiz': [], 'Midterm': 0, 'Final': 0}
+
+        # For Homework and Quiz scores
+        for i in range(4, 11):  # Columns 4 to 10 inclusive
+            item = self.tableWidget.item(row_index, i)
+            if item:
+                value = item.text()
+                if value:  # Check if the text is not empty
+                    try:
+                        value = float(value)
+                        if i < 7:  # Columns 4, 5, 6 for HW
+                            scores['HW'].append(value)
+                        else:  # Columns 7, 8, 9, 10 for Quiz
+                            scores['Quiz'].append(value)
+                    except ValueError:
+                        continue  # Skip non-numeric values
+
+        # For Midterm and Final scores
+        for key, col in {'Midterm': 11, 'Final': 12}.items():
+            item = self.tableWidget.item(row_index, col)
+            if item:
+                value = item.text()
+                if value:  # Check if the text is not empty
+                    try:
+                        scores[key] = float(value)
+                    except ValueError:
+                        continue  # Skip non-numeric values
+
+        return scores
+
+    def calculate_averages(self, scores):
+        hw_average = np.mean(scores['HW']) if scores['HW'] else 0
+        quiz_average = np.mean(scores['Quiz']) if scores['Quiz'] else 0
+        return hw_average, quiz_average
+
+    def calculate_final_score(self, hw_average, quiz_average, scores):
+        weights = {'HW': 0.2, 'Quiz': 0.2, 'Midterm': 0.3, 'Final': 0.3}
+        final_score = (hw_average * weights['HW'] +
+                       quiz_average * weights['Quiz'] +
+                       scores['Midterm'] * weights['Midterm'] +
+                       scores['Final'] * weights['Final'])
+        return round(final_score, 2)
+
+    def determine_final_grade(self, final_score):
+        if final_score >= 90:
+            return 'A'
+        elif final_score >= 80:
+            return 'B'
+        elif final_score >= 70:
+            return 'C'
+        elif final_score >= 60:
+            return 'D'
+        else:
+            return 'F'
+
+    def update_table_with_grades(self, row_index, final_score, grade):
+        self.tableWidget.setItem(
+            row_index, 13, QTableWidgetItem(f'{final_score}%'))
+        self.tableWidget.setItem(row_index, 14, QTableWidgetItem(grade))
+
+    # ------------------- Data Manipulation Methods -------------------
     def read_in(self):
         options = QFileDialog.Options()
         filePath, _ = QFileDialog.getOpenFileName(
@@ -134,8 +220,21 @@ class Gradebook(object):
             for row_index, row_data in enumerate(csv_readin):
                 self.tableWidget.insertRow(row_index)
                 for col_index, col_data in enumerate(row_data):
+                    """
+                    Set missing assignments as a dash '-'
+
+                    IMPORTANT:
+                    - Ensure proper formatting in the CSV file to avoid misinterpretation of missing assignments.
+                    - If the CSV file does not leave commas to indicate missing assignments, the last assignment(s) 
+                    will default to the '-' instead of the correct assignments.
+
+                    Example of CSV Entry for Missing Assignments:
+                   edu, 12314,John,Doe,jdoe@univ.,,10,100,90,60,100,80,68
+                    (Keep commas when there are missing assignments / leave it blank)
+                    """
+                    cell_value = col_data if col_data else '-'
                     self.tableWidget.setItem(
-                        row_index, col_index, QTableWidgetItem(str(col_data)))
+                        row_index, col_index, QTableWidgetItem(str(cell_value)))
             self.calculate_student_grades()
         # Update the graph and statistics after importing data
         self.statAnalysis.updateStatisticsAndGraph()
@@ -165,78 +264,7 @@ class Gradebook(object):
         for index in sorted(select_indices, reverse=True):
             self.tableWidget.removeRow(index.row())
 
-    def calculate_student_grades(self):
-        weights = {
-            'HW': 0.2,  # 20%
-            'Quiz': 0.2,  # 20%
-            'Midterm': 0.3,  # 30%
-            'Final': 0.3  # 30%
-        }
-
-        for row_index in range(self.tableWidget.rowCount()):
-            scores = {
-                'HW': [],
-                'Quiz': [],
-                'Midterm': 0,
-                'Final': 0
-            }
-
-            # For Homework and Quiz scores
-            for i in range(4, 11):  # Columns 4 to 10 inclusive
-                item = self.tableWidget.item(row_index, i)
-                if item:
-                    value = item.text()
-                    if value:  # Check if the text is not empty
-                        try:
-                            value = float(value)
-                            if i < 7:  # Columns 4, 5, 6 for HW
-                                scores['HW'].append(value)
-                            else:  # Columns 7, 8, 9, 10 for Quiz
-                                scores['Quiz'].append(value)
-                        except ValueError:
-                            continue  # Skip non-numeric values
-
-            # For Midterm and Final scores
-            for key, col in {'Midterm': 11, 'Final': 12}.items():
-                item = self.tableWidget.item(row_index, col)
-                if item:
-                    value = item.text()
-                    if value:  # Check if the text is not empty
-                        try:
-                            scores[key] = float(value)
-                        except ValueError:
-                            continue  # Skip non-numeric values
-
-            # Calculate averages and final score
-            hw_average = sum(scores['HW']) / \
-                len(scores['HW']) if scores['HW'] else 0
-            quiz_average = sum(scores['Quiz']) / \
-                len(scores['Quiz']) if scores['Quiz'] else 0
-
-            final_score = (hw_average * weights['HW'] +
-                           quiz_average * weights['Quiz'] +
-                           scores['Midterm'] * weights['Midterm'] +
-                           scores['Final'] * weights['Final'])
-
-            final_score = round(final_score, 2)
-
-            # Determine the final grade
-            if final_score >= 90:
-                grade = 'A'
-            elif final_score >= 80:
-                grade = 'B'
-            elif final_score >= 70:
-                grade = 'C'
-            elif final_score >= 60:
-                grade = 'D'
-            else:
-                grade = 'F'
-
-            # Update the table with the final score and grade
-            self.tableWidget.setItem(
-                row_index, 13, QTableWidgetItem(f'{final_score}%'))
-            self.tableWidget.setItem(row_index, 14, QTableWidgetItem(grade))
-
+    # ------------------- Search and Display Methods -------------------
     def reset_search(self):
         # Reset the properties of the previously selected row
         if self.prev_selected_row != -1:
@@ -275,6 +303,13 @@ class Gradebook(object):
         QMessageBox.information(
             self.tableWidget, "Student Search", f"Student with SID {sid} was NOT found!")
         return
+
+    # ------------------- Event Handling Methods -------------------
+
+    def on_item_changed(self, item):
+        # Check if the changed item is in a grade column
+        if item.column() in range(4, 13):  # Columns 4 to 12 inclusive are grade columns
+            self.calculate_student_grades()
 
 
 if __name__ == "__main__":
