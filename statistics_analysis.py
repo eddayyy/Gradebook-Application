@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from PyQt5.QtWidgets import QComboBox, QVBoxLayout, QLabel, QWidget, QHBoxLayout
+from PyQt5.QtWidgets import QComboBox, QVBoxLayout, QLabel, QWidget, QHBoxLayout, QMessageBox
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QFont
 
@@ -16,13 +16,32 @@ class StatisticalAnalysis:
 
     def setupUI(self):
         self.dataError = "No Available Data"
+
         self.initializeMainWindow()
         central_widget = QWidget()
         main_layout = QVBoxLayout(central_widget)
 
-        self.setupControlPanel(main_layout)
-        self.setupStatisticsDisplay(main_layout)
-        self.setupGraphDisplay(main_layout)
+        # Create a Group Box for Control Panel
+        control_panel_group_box = QtWidgets.QGroupBox("Fields:")
+        control_panel_layout = QVBoxLayout(control_panel_group_box)
+        self.setupControlPanel(control_panel_layout)
+        main_layout.addWidget(control_panel_group_box)
+
+        # Create a Group Box for Statistics Display
+        statistics_display_group_box = QtWidgets.QGroupBox(
+            "Statistics Display")
+        statistics_display_layout = QVBoxLayout(statistics_display_group_box)
+        self.setupStatisticsDisplay(statistics_display_layout)
+        main_layout.addWidget(statistics_display_group_box)
+
+        # Create a Group Box for Graph Display
+        graph_display_group_box = QtWidgets.QGroupBox("Graph Display")
+        graph_display_layout = QVBoxLayout(graph_display_group_box)
+        self.setupGraphDisplay(graph_display_layout)
+        main_layout.addWidget(graph_display_group_box)
+
+        # Add a vertical spacer at the end to push all group boxes to the top
+        main_layout.addStretch(1)
 
         self.statAnalysis.setCentralWidget(central_widget)
 
@@ -32,10 +51,7 @@ class StatisticalAnalysis:
         self.statAnalysis.resize(1280, 960)
         self.statAnalysis.setWindowTitle('Statistical Analysis')
 
-    def setupControlPanel(self, main_layout):
-        control_panel_layout = QHBoxLayout()
-        control_panel_layout.setContentsMargins(10, 10, 10, 10)
-
+    def setupControlPanel(self, control_panel_layout):
         self.comboBox = QComboBox()
         self.comboBox.addItems([
             'HW1', 'HW2', 'HW3', 'Quiz1', 'Quiz2', 'Quiz3', 'Quiz4', 'MidtermExam', 'FinalExam'
@@ -44,23 +60,26 @@ class StatisticalAnalysis:
             self.updateStatisticsAndGraph)
         control_panel_layout.addWidget(self.comboBox)
 
-        main_layout.addLayout(control_panel_layout)
-
-    def setupStatisticsDisplay(self, main_layout):
+    def setupStatisticsDisplay(self, statistics_display_layout):
         self.statisticsLabel = QLabel()
         font = QFont()
         font.setPointSize(14)
         self.statisticsLabel.setFont(font)
-        main_layout.addWidget(self.statisticsLabel)
+        statistics_display_layout.addWidget(self.statisticsLabel)
 
-    def setupGraphDisplay(self, main_layout):
+    def setupGraphDisplay(self, graph_display_layout):
         self.figure, self.ax = plt.subplots()
         self.canvas = FigureCanvas(self.figure)
-        main_layout.addWidget(self.canvas)
+        graph_display_layout.addWidget(self.canvas)
 
     # ------------------- Mathematical/Calculation Methods -------------------
 
     def updateStatisticsAndGraph(self):
+        # Check if the table is empty
+        if self.tableWidget.rowCount() == 0:
+            QMessageBox.information(
+                self.statAnalysis, "No Data", "The table is empty. Please add data first.")
+            return
         column_index = self.comboBox.currentIndex() + 4
         self.updateStatistics(column_index)
         self.updateGraph(column_index)
@@ -79,12 +98,23 @@ class StatisticalAnalysis:
         font = QFont()
         font.setPointSize(14)
         self.statisticsLabel.setFont(font)
-        self.statisticsLabel.setText(
-            f'Maximum Score: {maxVal:<30} Minimum Score: {minVal:<30}\n'
-            f'Mean: {mean:<30} Median: {median:<30}\n'
-            f'Standard Deviation: {std:<30} Passing: {passing} ({passingRate:<30})\n'
-            f'Failing: {failing} ({failingRate:<30}) Missing Assignments: {missing_assignments:<30}\n'
+
+        # Structured and formatted statistics text
+        statistics_text = (
+            f"<b>Statistics:</b><br>"
+            f"<table>"
+            f"<tr><td>Maximum Score:</td><td align='right'>{maxVal}</td></tr>"
+            f"<tr><td>Minimum Score:</td><td align='right'>{minVal}</td></tr>"
+            f"<tr><td>Mean:</td><td align='right'>{mean}</td></tr>"
+            f"<tr><td>Median:</td><td align='right'>{median}</td></tr>"
+            f"<tr><td>Standard Deviation:</td><td align='right'>{std}</td></tr>"
+            f"<tr><td>Passing:</td><td align='right'>{passing} ({passingRate})</td></tr>"
+            f"<tr><td>Failing:</td><td align='right'>{failing} ({failingRate})</td></tr>"
+            f"<tr><td>Missing Assignments:</td><td align='right'>{missing_assignments}</td></tr>"
+            f"</table>"
         )
+
+        self.statisticsLabel.setText(statistics_text)
 
     def updateGraph(self, column_index):
         self.ax.clear()
@@ -96,14 +126,14 @@ class StatisticalAnalysis:
 
     def customizeGraphAppearance(self):
         self.ax.set_title('Distribution of Student Grades',
-                          fontsize=18, fontweight='bold')
-
+                          fontsize=18, fontweight='bold', color='darkblue')
         self.ax.grid(True, linestyle='--', alpha=0.7)
-
-        self.ax.set_xlabel('Student Grades', fontsize=16, fontweight='bold')
-        self.ax.set_ylabel('Student Count', fontsize=16, fontweight='bold')
-
-        self.ax.tick_params(axis='both', which='major', labelsize=10)
+        self.ax.set_xlabel('Student Grades', fontsize=16,
+                           fontweight='bold', color='darkgreen')
+        self.ax.set_ylabel('Student Count', fontsize=16,
+                           fontweight='bold', color='darkgreen')
+        self.ax.tick_params(axis='both', which='major',
+                            labelsize=10, colors='darkred')
         self.ax.legend(loc='upper right')
 
     def calculateStats(self, column_index, stat_type):
@@ -151,7 +181,7 @@ class StatisticalAnalysis:
         missing = 0
         for row_index in range(self.tableWidget.rowCount()):
             item = self.tableWidget.item(row_index, column_index)
-            if item and item.text() == '-' or item.text() == '':
+            if item and (item.text() == '-' or item.text() == ''):
                 missing += 1
         return missing
 

@@ -4,13 +4,11 @@ import sys
 import numpy as np
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor, QFont
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QDialog,
     QFileDialog,
-    QLineEdit,
     QMessageBox,
-    QInputDialog,
     QTableWidgetItem,
 )
 
@@ -94,6 +92,7 @@ class Gradebook(object):
         self.searchLineEdit.setAlignment(Qt.AlignLeft)  # Right-align text
         self.searchLineEdit.setLayoutDirection(
             Qt.LeftToRight)  # Set layout direction to RTL
+        self.searchLineEdit.returnPressed.connect(self.searchBySID)
         search_layout.addWidget(self.searchLineEdit)
 
         # X Button (Clear Search)
@@ -119,11 +118,15 @@ class Gradebook(object):
         self.tableWidget.setEditTriggers(
             QtWidgets.QAbstractItemView.AllEditTriggers)
 
+        # Table Modified
+        self.tableWidget.itemChanged.connect(self.onItemChanged)
+
+        # Table Headers
         bold_font = QFont()
         bold_font.setBold(True)
         self.tableWidget.horizontalHeader().setFont(bold_font)
+        self.tableWidget.horizontalHeader().sectionClicked.connect(self.sortColumns)
 
-        self.tableWidget.itemChanged.connect(self.onItemChanged)
         main_layout.addWidget(self.tableWidget)
 
     def initStats(self):
@@ -320,6 +323,62 @@ class Gradebook(object):
                     sid = self.table_backup[index.row()][0]
                     self.table_backup = [
                         student for student in self.table_backup if student[0] != sid]
+
+    def sortColumns(self, column):
+        # Determine the sorting order (Ascending or Descending) based on the state of the table header.
+        is_ascending = self.tableWidget.horizontalHeader(
+        ).sortIndicatorOrder() == Qt.AscendingOrder
+
+        # Initialize a list to store tuples of (row_index, value) where value is the content of the cell in the sorted column.
+        items_with_index = []
+
+        # Iterate over each row in the table and populate the items_with_index list.
+        row_count = self.tableWidget.rowCount()
+        for row_index in range(row_count):
+            item = self.tableWidget.item(row_index, column)
+            # Assign the text of the item to value if the item is not None, else assign '-'.
+            value = item.text() if item else '-'
+
+            # Attempt to convert the value to a float, if it fails, keep it as is (string).
+            try:
+                value = float(value)
+            except ValueError:
+                pass
+
+            # Append the tuple (row_index, value) to the items_with_index list.
+            items_with_index.append((row_index, value))
+
+        # Sort the items_with_index list based on the value.
+        # If value is '-', treat it as negative infinity to ensure it goes to the end/beginning of the list depending on the sorting order.
+        items_with_index.sort(key=lambda x: float(
+            '-inf') if x[1] == '-' else x[1], reverse=not is_ascending)
+
+        # Initialize a list to store the rows in their new sorted order.
+        # Each element of sorted_rows will be a list representing a row, where each element of that list is a QTableWidgetItem.
+        sorted_rows = [None] * row_count
+
+        # Populate the sorted_rows list with the items in their new sorted order.
+        for new_index, (row_index, _) in enumerate(items_with_index):
+            # For each tuple in items_with_index, create a new list in sorted_rows at the index corresponding to its sorted position.
+            sorted_rows[new_index] = []
+
+            # Iterate over each column in the table.
+            for col_index in range(self.tableWidget.columnCount()):
+                # For each cell in the row, take the item from its current position in the table.
+                # The takeItem method retrieves and removes the item from the table.
+                item = self.tableWidget.takeItem(row_index, col_index)
+
+                # Append the item to the new list in sorted_rows, effectively moving the row to its new sorted position in sorted_rows.
+                sorted_rows[new_index].append(item)
+
+        # Now, sorted_rows contains all the rows in their sorted order, and the table is empty.
+        # The next step is to place the sorted rows back into the table.
+        for row_index, row_items in enumerate(sorted_rows):
+            # Iterate over each list (representing a row) in sorted_rows.
+            for col_index, item in enumerate(row_items):
+                # For each item in the list, set the item back into its corresponding cell in the table.
+                # This places each row back into the table in its sorted position.
+                self.tableWidget.setItem(row_index, col_index, item)
 
     # ------------------- Search and Display Methods -------------------
 
