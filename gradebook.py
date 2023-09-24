@@ -13,6 +13,7 @@ class Gradebook(object):
     def __init__(self):
         self.output = 'exported_student_data.csv'
         self.prev_selected_row = -1  # Initialize to -1 as no row is selected initially
+        self.tableBackUp = []
 
     # ------------------- Setup/UI Initialization Methods -------------------
     def __init__(self):
@@ -48,7 +49,7 @@ class Gradebook(object):
 
         # Import Button
         import_action = QtWidgets.QAction("Import Data", MainWindow)
-        import_action.triggered.connect(self.read_in)
+        import_action.triggered.connect(self.readIn)
         file_toolbar.addAction(import_action)
 
         # Export Button
@@ -62,12 +63,12 @@ class Gradebook(object):
 
         # Add Button
         add_action = QtWidgets.QAction("Add Student", MainWindow)
-        add_action.triggered.connect(self.add_student)
+        add_action.triggered.connect(self.addStudent)
         student_toolbar.addAction(add_action)
 
         # Delete Button
         delete_action = QtWidgets.QAction("Delete Student", MainWindow)
-        delete_action.triggered.connect(self.delete_student)
+        delete_action.triggered.connect(self.deleteStudent)
         student_toolbar.addAction(delete_action)
 
         # Search Button
@@ -76,17 +77,26 @@ class Gradebook(object):
         student_toolbar.addAction(stat_action)
 
     def setupSearchLayout(self, main_layout):
-        # Search Text Entry
         search_layout = QtWidgets.QHBoxLayout()
+
+        # Search Button
+        self.searchButton = QtWidgets.QPushButton("Search by SID")
+        self.searchButton.clicked.connect(self.searchBySID)
+        self.searchButton.clicked.connect(self.displaySearchClear)
+        search_layout.addWidget(self.searchButton)
+
+        # Search Text Entry
         self.searchLineEdit = QtWidgets.QLineEdit()
-        self.searchLineEdit.setAlignment(Qt.AlignRight)  # Right-align text
+        self.searchLineEdit.setAlignment(Qt.AlignLeft)  # Right-align text
         self.searchLineEdit.setLayoutDirection(
-            Qt.RightToLeft)  # Set layout direction to RTL
+            Qt.LeftToRight)  # Set layout direction to RTL
         search_layout.addWidget(self.searchLineEdit)
 
-        self.searchButton = QtWidgets.QPushButton("Search by SID")
-        self.searchButton.clicked.connect(self.search_by_sid)
-        search_layout.addWidget(self.searchButton)
+        # X Button (Clear Search)
+        self.clearSearch = QtWidgets.QPushButton('X')
+        self.clearSearch.clicked.connect(self.onSearchClear)
+        search_layout.addWidget(self.clearSearch)
+        self.clearSearch.hide()
 
         main_layout.addLayout(search_layout)
 
@@ -109,7 +119,7 @@ class Gradebook(object):
         bold_font.setBold(True)
         self.tableWidget.horizontalHeader().setFont(bold_font)
 
-        self.tableWidget.itemChanged.connect(self.on_item_changed)
+        self.tableWidget.itemChanged.connect(self.onItemChanged)
         main_layout.addWidget(self.tableWidget)
 
     def initStats(self):
@@ -122,16 +132,16 @@ class Gradebook(object):
 
     # ------------------- Mathematical/Calculation Methods -------------------
 
-    def calculate_student_grades(self):
+    def calculateStudentGrades(self):
         for row_index in range(self.tableWidget.rowCount()):
-            scores = self.retrieve_scores(row_index)
-            hw_average, quiz_average = self.calculate_averages(scores)
-            final_score = self.calculate_final_score(
+            scores = self.retrievveScores(row_index)
+            hw_average, quiz_average = self.calculateAverages(scores)
+            final_score = self.calculateFinalScore(
                 hw_average, quiz_average, scores)
-            grade = self.determine_final_grade(final_score)
-            self.update_table_with_grades(row_index, final_score, grade)
+            grade = self.determineFinalGrade(final_score)
+            self.updateTableWithGrades(row_index, final_score, grade)
 
-    def retrieve_scores(self, row_index):
+    def retrievveScores(self, row_index):
         scores = {'HW': [], 'Quiz': [], 'Midterm': 0, 'Final': 0}
 
         # For Homework and Quiz scores
@@ -162,12 +172,12 @@ class Gradebook(object):
 
         return scores
 
-    def calculate_averages(self, scores):
+    def calculateAverages(self, scores):
         hw_average = np.mean(scores['HW']) if scores['HW'] else 0
         quiz_average = np.mean(scores['Quiz']) if scores['Quiz'] else 0
         return hw_average, quiz_average
 
-    def calculate_final_score(self, hw_average, quiz_average, scores):
+    def calculateFinalScore(self, hw_average, quiz_average, scores):
         weights = {'HW': 0.2, 'Quiz': 0.2, 'Midterm': 0.3, 'Final': 0.3}
         final_score = (hw_average * weights['HW'] +
                        quiz_average * weights['Quiz'] +
@@ -175,7 +185,7 @@ class Gradebook(object):
                        scores['Final'] * weights['Final'])
         return round(final_score, 2)
 
-    def determine_final_grade(self, final_score):
+    def determineFinalGrade(self, final_score):
         if final_score >= 90:
             return 'A'
         elif final_score >= 80:
@@ -187,13 +197,14 @@ class Gradebook(object):
         else:
             return 'F'
 
-    def update_table_with_grades(self, row_index, final_score, grade):
+    def updateTableWithGrades(self, row_index, final_score, grade):
         self.tableWidget.setItem(
             row_index, 13, QTableWidgetItem(f'{final_score}%'))
         self.tableWidget.setItem(row_index, 14, QTableWidgetItem(grade))
 
     # ------------------- Data Manipulation Methods -------------------
-    def read_in(self):
+
+    def readIn(self):
         options = QFileDialog.Options()
         filePath, _ = QFileDialog.getOpenFileName(
             None, "Open CSV", "", "CSV Files (*.csv);;All Files (*)", options=options)
@@ -235,7 +246,7 @@ class Gradebook(object):
                     cell_value = col_data if col_data else '-'
                     self.tableWidget.setItem(
                         row_index, col_index, QTableWidgetItem(str(cell_value)))
-            self.calculate_student_grades()
+            self.calculateStudentGrades()
         # Update the graph and statistics after importing data
         self.statAnalysis.updateStatisticsAndGraph()
         self.file_load = True
@@ -253,63 +264,77 @@ class Gradebook(object):
                     row_data.append(item.text() if item else "")
                 writer.writerow(row_data)
 
-    def add_student(self):
-        self.reset_search()
+    def addStudent(self):
+        self.resetSearch()
         row_position = self.tableWidget.rowCount()
         select_indeces = self.tableWidget.insertRow(row_position)
 
-    def delete_student(self):
-        self.reset_search()
+    def deleteStudent(self):
+        self.resetSearch()
         select_indices = self.tableWidget.selectionModel().selectedRows()
         for index in sorted(select_indices, reverse=True):
             self.tableWidget.removeRow(index.row())
 
     # ------------------- Search and Display Methods -------------------
-    def reset_search(self):
-        # Reset the properties of the previously selected row
-        if self.prev_selected_row != -1:
-            default_color = QColor("white")  # Or whatever the default color is
-            for col_index in range(self.tableWidget.columnCount()):
-                self.tableWidget.item(
-                    self.prev_selected_row, col_index).setBackground(default_color)
-            self.tableWidget.setRowHeight(
-                self.prev_selected_row, self.tableWidget.rowHeight(self.prev_selected_row) - 10)
-
-    def search_by_sid(self):
-        sid = self.searchLineEdit.text()
-        self.tableWidget.clearSelection()
-        self.reset_search()
+    def focusSearch(self, sid):
+        # Store the current state of the table
+        self.table_backup = []
         for row_index in range(self.tableWidget.rowCount()):
-            item = self.tableWidget.item(row_index, 0)
-            if item and item.text() == str(sid):
-                self.tableWidget.selectRow(row_index)
-                self.tableWidget.scrollToItem(
-                    self.tableWidget.item(row_index, 0))
+            row_data = {}
+            for col_index in range(self.tableWidget.columnCount()):
+                item = self.tableWidget.item(row_index, col_index)
+                row_data[col_index] = item.text() if item else ""
+            self.table_backup.append(row_data)
 
-                highlight_color = QColor("yellow")
-                for col_index in range(self.tableWidget.columnCount()):
-                    self.tableWidget.item(
-                        row_index, col_index).setBackground(highlight_color)
+        # Clear the table
+        self.tableWidget.setRowCount(0)
 
-                QMessageBox.information(
-                    self.tableWidget, "Student Search", f"Student with SID {sid} has been found!")
+        # Display only the searched student
+        for row_data in self.table_backup:
+            if row_data[0] == str(sid):  # Assuming SID is in the first column
+                row_position = self.tableWidget.rowCount()
+                self.tableWidget.insertRow(row_position)
+                for col_index, cell_value in row_data.items():
+                    self.tableWidget.setItem(
+                        row_position, col_index, QTableWidgetItem(cell_value))
+                break
 
-                self.tableWidget.setRowHeight(
-                    row_index, self.tableWidget.rowHeight(row_index) + 10)
+    def resetSearch(self):
+        # Restore the table to its previous state
+        self.tableWidget.setRowCount(0)
+        for row_data in self.table_backup:
+            row_position = self.tableWidget.rowCount()
+            self.tableWidget.insertRow(row_position)
+            for col_index, cell_value in row_data.items():
+                self.tableWidget.setItem(
+                    row_position, col_index, QTableWidgetItem(cell_value))
+        self.table_backup = []  # Clear the backup
+        self.clearSearch.hide()
+        self.searchLineEdit.setText('')
 
-                # Update the index of the currently selected row
-                self.prev_selected_row = row_index
-                return
-        QMessageBox.information(
-            self.tableWidget, "Student Search", f"Student with SID {sid} was NOT found!")
-        return
+    def searchBySID(self):
+        sid = self.searchLineEdit.text()
+        if not sid:
+            QMessageBox.information(
+                self.tableWidget, "Student Search", "Please enter a Student ID (SID) to search.")
+            return
+        self.focusSearch(sid)
+        self.displaySearchClear()
 
     # ------------------- Event Handling Methods -------------------
 
-    def on_item_changed(self, item):
+    def onItemChanged(self, item):
         # Check if the changed item is in a grade column
         if item.column() in range(4, 13):  # Columns 4 to 12 inclusive are grade columns
-            self.calculate_student_grades()
+            self.calculateStudentGrades()
+
+    def displaySearchClear(self):
+        self.clearSearch.show()
+
+    def onSearchClear(self):
+        self.searchLineEdit.setText('')
+        self.resetSearch()
+        self.clearSearch.hide()
 
 
 if __name__ == "__main__":

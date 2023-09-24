@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtWidgets import QComboBox, QVBoxLayout, QLabel, QWidget, QHBoxLayout
 from PyQt5 import QtWidgets
@@ -12,7 +13,9 @@ class StatisticalAnalysis:
         self.setupUI()
 
     # ------------------- Setup/UI Initialization Methods -------------------
+
     def setupUI(self):
+        self.dataError = "No Available Data"
         self.initializeMainWindow()
         central_widget = QWidget()
         main_layout = QVBoxLayout(central_widget)
@@ -77,14 +80,15 @@ class StatisticalAnalysis:
         font.setPointSize(14)
         self.statisticsLabel.setFont(font)
         self.statisticsLabel.setText(
-            f'Mean: {mean}\n'
-            f'Median: {median}\n'
+            f'Maximum Score: {maxVal}{:<10} '
+            f'Minimum Score: {minVal}\n'
+            f'Mean: {mean} '
+            f'Median: {median} '
             f'Standard Deviation: {std}\n'
-            f'Passing: {passing} ({passingRate})\n'
+            f'Passing: {passing} ({passingRate}) '
             f'Failing: {failing} ({failingRate})\n'
             f'Missing Assignments: {missing_assignments}\n'
-            f'Max: {maxVal}\n'
-            f'Min: {minVal}\n'
+
         )
 
     def updateGraph(self, column_index):
@@ -110,7 +114,7 @@ class StatisticalAnalysis:
     def calculateStats(self, column_index, stat_type):
         values = self.getValuesFromColumn(column_index)
         if not values:  # If the list is empty, return None
-            return "No Available Data"
+            return self.dataError
         stat_function = getattr(np, stat_type)
         return round(stat_function(values), 2)
 
@@ -118,7 +122,7 @@ class StatisticalAnalysis:
         values = self.getValuesFromColumn(column_index)
         passing, failing = 0, 0
         if not values:
-            return "No Available Data"
+            return self.dataError, self.dataError, self.dataError, self.dataError
         for val in values:
             if val < 60:
                 failing += 1
@@ -152,7 +156,7 @@ class StatisticalAnalysis:
         missing = 0
         for row_index in range(self.tableWidget.rowCount()):
             item = self.tableWidget.item(row_index, column_index)
-            if item and item.text() == '-' or '':
+            if item and item.text() == '-' or item.text() == '':
                 missing += 1
         return missing
 
@@ -172,7 +176,7 @@ class StatisticalAnalysis:
 
         # Return None if no numeric value is found in the column
         if minVal == float('inf') or maxVal == float('-inf'):
-            return "No Available Data"
+            return self.dataError
 
         return minVal, maxVal
 
