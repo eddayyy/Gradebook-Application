@@ -38,7 +38,7 @@ The Gradebook Application is a Python-based 🐍 software designed to assist edu
    ```
 5. Run the application.
    ```
-   python main.py
+   python gradebook.py
    ```
 
 ## Running the Application
