@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from PyQt5.QtWidgets import QComboBox, QVBoxLayout, QLabel, QWidget, QHBoxLayout, QMessageBox
+from PyQt5.QtWidgets import QComboBox, QVBoxLayout, QLabel, QWidget, QHBoxLayout, QMessageBox, QGridLayout
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QFont
 
@@ -19,7 +19,7 @@ class StatisticalAnalysis:
 
         self.initializeMainWindow()
         central_widget = QWidget()
-        main_layout = QVBoxLayout(central_widget)
+        main_layout = QGridLayout(central_widget)
 
         # Create a Group Box for Control Panel
         control_panel_group_box = QtWidgets.QGroupBox("Fields:")
@@ -41,7 +41,7 @@ class StatisticalAnalysis:
         main_layout.addWidget(graph_display_group_box)
 
         # Add a vertical spacer at the end to push all group boxes to the top
-        main_layout.addStretch(1)
+        # main_layout.addStretch(1)
 
         self.statAnalysis.setCentralWidget(central_widget)
 
