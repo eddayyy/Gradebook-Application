@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from PyQt5.QtWidgets import QComboBox, QVBoxLayout, QLabel, QWidget, QHBoxLayout, QMessageBox, QGridLayout
+from PyQt5.QtWidgets import QComboBox, QVBoxLayout, QLabel, QWidget, QHBoxLayout, QMessageBox, QGridLayout, QSplitter
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QFont
 
@@ -19,29 +19,42 @@ class StatisticalAnalysis:
 
         self.initializeMainWindow()
         central_widget = QWidget()
-        main_layout = QGridLayout(central_widget)
+        main_layout = QVBoxLayout(central_widget)  # Main layout is vertical
 
         # Create a Group Box for Control Panel
         control_panel_group_box = QtWidgets.QGroupBox("Fields:")
         control_panel_layout = QVBoxLayout(control_panel_group_box)
         self.setupControlPanel(control_panel_layout)
-        main_layout.addWidget(control_panel_group_box)
+        main_layout.addWidget(control_panel_group_box)  # Control panel at the top
 
+        # Horizontal layout for statistics and graph
+        horizontal_layout = QHBoxLayout()
+        
         # Create a Group Box for Statistics Display
-        statistics_display_group_box = QtWidgets.QGroupBox(
-            "Statistics Display")
+        statistics_display_group_box = QtWidgets.QGroupBox("Statistics Display")
         statistics_display_layout = QVBoxLayout(statistics_display_group_box)
         self.setupStatisticsDisplay(statistics_display_layout)
-        main_layout.addWidget(statistics_display_group_box)
+        horizontal_layout.addWidget(statistics_display_group_box)
 
         # Create a Group Box for Graph Display
         graph_display_group_box = QtWidgets.QGroupBox("Graph Display")
         graph_display_layout = QVBoxLayout(graph_display_group_box)
         self.setupGraphDisplay(graph_display_layout)
-        main_layout.addWidget(graph_display_group_box)
+        horizontal_layout.addWidget(graph_display_group_box)
 
-        # Add a vertical spacer at the end to push all group boxes to the top
-        # main_layout.addStretch(1)
+        # Add horizontal layout to the main layout
+        main_layout.addLayout(horizontal_layout)
+
+        # Set size policies to make widgets expandable
+        control_panel_group_box.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        statistics_display_group_box.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        graph_display_group_box.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+        # Optionally, use QSplitter for user-adjustable sizes between statistics and graph
+        splitter = QSplitter()
+        splitter.addWidget(statistics_display_group_box)
+        splitter.addWidget(graph_display_group_box)
+        horizontal_layout.addWidget(splitter)
 
         self.statAnalysis.setCentralWidget(central_widget)
 
