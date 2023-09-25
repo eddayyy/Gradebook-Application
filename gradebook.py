@@ -274,7 +274,6 @@ class Gradebook(object):
                 writer.writerow(row_data)
 
     def addStudent(self):
-        self.resetSearch()
         dialog = StudentDialog(self.tableWidget)
         result = dialog.exec_()
         if result == QDialog.Accepted:
