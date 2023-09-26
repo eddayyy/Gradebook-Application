@@ -21,6 +21,8 @@ class Gradebook(object):
     def __init__(self):
         self.output = 'exported_student_data.csv'
         self.table_backup = []
+        self.columnChanged = -1
+        self.rowChanged = -1
 
     def setupUi(self, MainWindow):
         self.initializeMainWindow(MainWindow)
@@ -41,7 +43,7 @@ class Gradebook(object):
         MainWindow.setCentralWidget(central_widget)
 
     def initializeMainWindow(self, MainWindow):
-        MainWindow.setWindowIcon(QIcon("../media/Gradebook2.png"))
+        MainWindow.setWindowIcon(QIcon("./media/Gradebook2.png"))
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1920, 1080)
         MainWindow.setWindowTitle("Gradebook")
@@ -412,6 +414,7 @@ class Gradebook(object):
     def resetSearch(self):
         # Restore the table to its previous state
         self.tableWidget.setRowCount(0)
+
         for row_data in self.table_backup:
             row_position = self.tableWidget.rowCount()
             self.tableWidget.insertRow(row_position)
@@ -437,6 +440,8 @@ class Gradebook(object):
         # Check if the changed item is in a grade column
         if item.column() in range(4, 13):  # Columns 4 to 12 inclusive are grade columns
             self.calculateStudentGrades()
+            self.columnChanged = item.column()
+            self.rowChanged = item.row()
 
     def displaySearchClear(self):
         self.clearSearch.show()
