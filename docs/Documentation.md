@@ -14,5 +14,5 @@
 4. [NumPy](https://numpy.org/doc/stable/reference/generated/numpy.mean.html)
 5. [Matplotlib](https://matplotlib.org/cheatsheets/_images/cheatsheets-1.png)
 
-## PyQt5 Usage 
+### PyQt5 Usage 
 
