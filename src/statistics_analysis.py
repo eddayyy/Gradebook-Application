@@ -25,13 +25,15 @@ class StatisticalAnalysis:
         control_panel_group_box = QtWidgets.QGroupBox("Fields:")
         control_panel_layout = QVBoxLayout(control_panel_group_box)
         self.setupControlPanel(control_panel_layout)
-        main_layout.addWidget(control_panel_group_box)  # Control panel at the top
+        # Control panel at the top
+        main_layout.addWidget(control_panel_group_box)
 
         # Horizontal layout for statistics and graph
         horizontal_layout = QHBoxLayout()
-        
+
         # Create a Group Box for Statistics Display
-        statistics_display_group_box = QtWidgets.QGroupBox("Statistics Display")
+        statistics_display_group_box = QtWidgets.QGroupBox(
+            "Statistics Display")
         statistics_display_layout = QVBoxLayout(statistics_display_group_box)
         self.setupStatisticsDisplay(statistics_display_layout)
         horizontal_layout.addWidget(statistics_display_group_box)
@@ -46,9 +48,12 @@ class StatisticalAnalysis:
         main_layout.addLayout(horizontal_layout)
 
         # Set size policies to make widgets expandable
-        control_panel_group_box.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
-        statistics_display_group_box.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        graph_display_group_box.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        control_panel_group_box.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        statistics_display_group_box.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        graph_display_group_box.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
         # Optionally, use QSplitter for user-adjustable sizes between statistics and graph
         splitter = QSplitter()
@@ -217,6 +222,9 @@ class StatisticalAnalysis:
             return self.dataError
 
         return minVal, maxVal
+
+    def exportHistogram(self):
+        self.figure.savefig("student_data.png")
 
     # ------------------- Display Methods -------------------
 

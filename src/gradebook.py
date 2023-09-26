@@ -1,5 +1,4 @@
 import csv
-import sys
 
 import numpy as np
 from PyQt5 import QtWidgets
@@ -223,14 +222,15 @@ class Gradebook(object):
         if not filePath:  # If no file is selected, return
             return
 
-        # Confirmation Dialog
+        # Confirmation message for the user to clear the Table when it's not empty
         if self.tableWidget.rowCount() != 0:
             msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Question)
             msgBox.setText(
                 "Do you want to clear the existing data in the table?")
             msgBox.setWindowTitle("Confirmation")
-            msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            msgBox.setStandardButtons(
+                QMessageBox.Yes | QMessageBox.No)  # User options
 
             returnValue = msgBox.exec()
             if returnValue == QMessageBox.Yes:
@@ -275,6 +275,7 @@ class Gradebook(object):
                     item = self.tableWidget.item(row_index, col_index)
                     row_data.append(item.text() if item else "")
                 writer.writerow(row_data)
+        self.statAnalysis.exportHistogram()
 
     def addStudent(self):
         dialog = StudentDialog(self.tableWidget)
@@ -450,12 +451,3 @@ class Gradebook(object):
         self.searchLineEdit.setText('')
         self.resetSearch()
         self.clearSearch.hide()
-
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Gradebook()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
