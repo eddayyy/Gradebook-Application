@@ -4,7 +4,7 @@ import sys
 import numpy as np
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import (
     QDialog,
     QFileDialog,
@@ -41,9 +41,10 @@ class Gradebook(object):
         MainWindow.setCentralWidget(central_widget)
 
     def initializeMainWindow(self, MainWindow):
+        MainWindow.setWindowIcon(QIcon("../media/Gradebook2.png"))
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1920, 1080)
-        MainWindow.setWindowTitle("My Gradebook")
+        MainWindow.setWindowTitle("Gradebook")
 
     def setupFileToolbar(self, MainWindow, main_layout):
         file_toolbar = QtWidgets.QToolBar("File Operations", MainWindow)
