@@ -60,14 +60,14 @@ if __name__ == "__main__":
 
 ```python
 def setupTable(self, main_layout):
-        self.tableWidget = QtWidgets.QTableWidget()
-        self.tableWidget.setColumnCount(15)
-        self.tableWidget.setHorizontalHeaderLabels([
-            'SID', 'FirstName', 'LastName', 'Email',
-            'HW1', 'HW2', 'HW3', 'Quiz1', 'Quiz2',
-            'Quiz3', 'Quiz4', 'MidtermExam', 'FinalExam',
-            'Final Score', 'Final Grade'
-        ])
+    self.tableWidget = QtWidgets.QTableWidget()
+    self.tableWidget.setColumnCount(15)
+    self.tableWidget.setHorizontalHeaderLabels([
+        'SID', 'FirstName', 'LastName', 'Email',
+        'HW1', 'HW2', 'HW3', 'Quiz1', 'Quiz2',
+        'Quiz3', 'Quiz4', 'MidtermExam', 'FinalExam',
+        'Final Score', 'Final Grade'
+    ])
 ```
 
 #### Important Methods
