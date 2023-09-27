@@ -40,7 +40,8 @@ In this project, PyQt5 was used extensively to creaate the Graphical User Interf
 In addition to rendering and formatting the GUI, PyQt5 also provided a robust table data structure that not only allowed student data to be displayed but modified, manipulated, replicated, and exported. This is thanks to PyQt5's QWidgets module. 
 
 - How to display a Qt Window:
-'''
+
+'''python
 import sys
 from PyQt5 import QtWidgets
 
