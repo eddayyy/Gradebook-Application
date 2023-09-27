@@ -42,12 +42,9 @@ In addition to rendering and formatting the GUI, PyQt5 also provided a robust ta
 - How to display a Qt Window:
 
 '''python
-
 import sys
 from PyQt5 import QtWidgets
-
 from gradebook import Gradebook
-
 if __name__ == "__main__"
 
     app = QtWidgets.QApplication(sys.argv)
