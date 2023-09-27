@@ -13,9 +13,9 @@ This library utilized the following libraries:
 4. [NumPy](#numpy)
 5. [Matplotlib](#matplotlib)
 
-## Library Usage Documentation
+# Library Usage Documentation
 
-### [PyQt5](https://www.pythonguis.com/search/?q=PyQt5)
+## [PyQt5](https://www.pythonguis.com/search/?q=PyQt5)
 #### **Introduction** 
 
 PyQt5 is a set of Python bindings for Qt libraries which can be used to create modern graphical user interfaces.
