@@ -54,10 +54,10 @@ if __name__ == "__main__"
     sys.exit(app.exec_())
 
 # Declaration and usage of the Qt Table
-def setupTable(self, main_layout):
-    self.tableWidget = QtWidgets.QTableWidget()
-    self.tableWidget.setColumnCount(15)
-    self.tableWidget.setHorizontalHeaderLabels([
+def setupTable(main_layout):
+    tableWidget = QtWidgets.QTableWidget()
+    tableWidget.setColumnCount(15)
+    tableWidget.setHorizontalHeaderLabels([
         'SID', 'FirstName', 'LastName', 'Email',
         'HW1', 'HW2', 'HW3', 'Quiz1', 'Quiz2',
         'Quiz3', 'Quiz4', 'MidtermExam', 'FinalExam',
@@ -67,34 +67,36 @@ def setupTable(self, main_layout):
 
 ## **[CSV](https://docs.python.org/3/library/csv.html)**
 
-### **Introduction** 
+#### **Introduction** 
 
-### **Installation**
+#### **Installation**
 
-### **Usage**
+#### **Usage**
 
 ## **[Sys](https://docs.python.org/2/library/sys.html)**
 
-### **Introduction** 
+#### **Introduction** 
 
-### **Installation**
+#### **Installation**
 
-### **Usage**
+#### **Usage**
 
 ## **[NumPy](https://numpy.org/doc/stable/reference/generated/numpy.mean.html)**
 
-### **Introduction** 
+#### **Introduction** 
 
-### **Installation**
+#### **Installation**
 
-### **Usage**
+#### **Usage**
 
 ## **[Matplotlib](https://matplotlib.org/cheatsheets/_images/cheatsheets-1.png)**
 
-### **Introduction** 
+#### **Introduction** 
 
-### **Installation**
+#### **Installation**
 
-### **Usage**
+#### **Usage**
 
-##
+# Features and Demo
+
+## Demo: 
