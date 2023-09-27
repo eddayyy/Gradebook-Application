@@ -264,8 +264,18 @@ class Gradebook(object):
         self.file_load = True
 
     def write_out(self):
-        with open(self.output, mode='w', newline='') as f:
+        # Prompt user to save file
+        options = QFileDialog.Options()
+        save_file = QFileDialog.getSaveFileName(  # Get the filepath and name
+            None, "Save Student Data", '', "CSV Files (*.csv)", options=options
+        )
+        file_path = save_file[0]
+        if not file_path[0]:  # If no file name / path was provided
+            return
+
+        with open(file_path, mode='w', newline='') as f:
             writer = csv.writer(f)
+            print(writer)
             writer.writerow(['SID', 'FirstName', 'LastName', 'Email', 'HW1', 'HW2',
                             'HW3', 'Quiz1', 'Quiz2', 'Quiz3', 'Quiz4', 'MidtermExam', 'FinalExam',
                              'FinalScore', 'FinalGrade'])

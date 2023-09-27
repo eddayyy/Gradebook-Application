@@ -224,7 +224,7 @@ class StatisticalAnalysis:
         return minVal, maxVal
 
     def exportHistogram(self):
-        self.figure.savefig("student_data.png")
+        self.figure.savefig("./exports/student_data.png")
 
     # ------------------- Display Methods -------------------
 
