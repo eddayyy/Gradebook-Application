@@ -48,7 +48,7 @@ from PyQt5 import QtWidgets
 
 from gradebook import Gradebook
 
-if __name__ == "__main__":
+if __name__ == "__main__"
 
     app = QtWidgets.QApplication(sys.argv)
 
