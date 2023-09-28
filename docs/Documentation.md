@@ -33,7 +33,7 @@ In addition to rendering and formatting the GUI, PyQt5 also provided a robust ta
     2. The function setHorizontalHeaderLabels() was also used to label each column with the student info (SID, Name, Grades etc.)
     3. Another module used in combination with QTable Widget was QAbstractItemView. This was used in combination with the selection and editting behavior of the table. 
     4. There is also a connect feature which allowed for the interactions with the table to be connected to custom functions. An example of this is when the headers are clicked. This calls a function that I defined named sortColumns. This function allows the user to sort the students by SID, name, grades, etc.
-2. [QAbstractItemView](https://doc.qt.io/qt-5/qabstractitemview.html)
+2. [QAbstractItemView]([https://doc.qt.io/qt-5/qabstractitemview.html](https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QAbstractItemView.html))
     1. The particular functions that were used in this program are "QAbstractItemView.SelectRows()" and QAbstractItemView.DoubleClick()" these were used to dictate the selection and editing behavior of the table. 
 3. [QApplication](https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QApplication.html)
     1. This clas was used to create an instance of Qt Application. This is necessary for any Python-based Qt Application. 
