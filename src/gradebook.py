@@ -20,8 +20,6 @@ class Gradebook(object):
     def __init__(self):
         self.output = 'exported_student_data.csv'
         self.table_backup = []
-        self.columnChanged = -1
-        self.rowChanged = -1
 
     def setupUi(self, MainWindow):
         self.initializeMainWindow(MainWindow)
@@ -118,7 +116,7 @@ class Gradebook(object):
         self.tableWidget.setSelectionBehavior(
             QtWidgets.QAbstractItemView.SelectRows)
         self.tableWidget.setEditTriggers(
-            QtWidgets.QAbstractItemView.AllEditTriggers)
+            QtWidgets.QAbstractItemView.DoubleClicked)
 
         # Table Modified
         self.tableWidget.itemChanged.connect(self.onItemChanged)
@@ -234,8 +232,7 @@ class Gradebook(object):
 
             returnValue = msgBox.exec()
             if returnValue == QMessageBox.Yes:
-                # Clear the existing rows in the table
-                self.tableWidget.setRowCount(0)
+                self.tableWidget.setRowCount(0)  # Clear the table
 
         with open(filePath, mode='r') as f:
             csv_readin = csv.reader(f)
@@ -270,7 +267,7 @@ class Gradebook(object):
             None, "Save Student Data", '', "CSV Files (*.csv)", options=options
         )
         file_path = save_file[0]
-        if not file_path[0]:  # If no file name / path was provided
+        if not file_path:  # If no file name / path was provided
             return
 
         with open(file_path, mode='w', newline='') as f:
@@ -451,8 +448,6 @@ class Gradebook(object):
         # Check if the changed item is in a grade column
         if item.column() in range(4, 13):  # Columns 4 to 12 inclusive are grade columns
             self.calculateStudentGrades()
-            self.columnChanged = item.column()
-            self.rowChanged = item.row()
 
     def displaySearchClear(self):
         self.clearSearch.show()
