@@ -1,3 +1,5 @@
+# Author: Eduardo Nunez
+# Author email: eduardonunez.eng@gmail.com
 from PyQt5.QtWidgets import QDialog, QFormLayout, QLineEdit, QVBoxLayout, QPushButton
 
 

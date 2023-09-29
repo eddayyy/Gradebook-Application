@@ -1,0 +1,82 @@
+/*
+Author: Eduardo Nunez
+Author email: eduardonunez.eng@gmail.com
+*/
+/* Set global font */
+/* Style for QPushButton */
+
+QAction {
+    font-family: "sans-serif";
+    font-size: 12px;
+    color: #333;
+}
+
+QHeaderView::section {
+    font-family: "sans-serif";
+    text-align: center;
+    border: 0.25px solid #000000;
+}
+
+QPushButton {
+    background-color: #1d5bb0;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    margin: 4px 2px;
+    border-radius: 4px;
+}
+
+QPushButton:hover {
+    background-color: #626262;
+    /* Darker green */
+}
+
+QPushButton:pressed {
+    background-color: #383f8e;
+    /* Even darker green */
+}
+
+/* Style for QLineEdit */
+QLineEdit {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+QLineEdit:focus {
+    border: 1px solid #4c7aaf;
+}
+
+/* Style for QComboBox */
+QComboBox {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+QComboBox QAbstractItemView {
+    border-color: #333;
+}
+
+
+/* Style for QLabel */
+QLabel {
+    color: #333;
+}
+
+/* Style for QMessageBox */
+QMessageBox {
+    background: #fff;
+}
+
+QMessageBox QLabel {
+    color: #333;
+    padding: 10px;
+}
+
+QMessageBox QPushButton {
+    min-width: 70px;
+    min-height: 30px;
+}

@@ -1,3 +1,5 @@
+# Author: Eduardo Nunez
+# Author email: eduardonunez.eng@gmail.com
 import csv
 
 import numpy as np
@@ -108,9 +110,9 @@ class Gradebook(object):
         self.tableWidget = QtWidgets.QTableWidget()
         self.tableWidget.setColumnCount(15)
         self.tableWidget.setHorizontalHeaderLabels([
-            'SID', 'FirstName', 'LastName', 'Email',
-            'HW1', 'HW2', 'HW3', 'Quiz1', 'Quiz2',
-            'Quiz3', 'Quiz4', 'MidtermExam', 'FinalExam',
+            'SID', 'First Name', 'Last Name', 'Email',
+            'HW 1', 'HW 2', 'HW 3', 'Quiz 1', 'Quiz 2',
+            'Quiz 3', 'Quiz 4', 'Midterm Exam', 'Final Exam',
             'Final Score', 'Final Grade'
         ])
         self.tableWidget.setSelectionBehavior(
@@ -266,16 +268,16 @@ class Gradebook(object):
         save_file = QFileDialog.getSaveFileName(  # Get the filepath and name
             None, "Save Student Data", '', "CSV Files (*.csv)", options=options
         )
+
         file_path = save_file[0]
         if not file_path:  # If no file name / path was provided
             return
 
         with open(file_path, mode='w', newline='') as f:
             writer = csv.writer(f)
-            print(writer)
-            writer.writerow(['SID', 'FirstName', 'LastName', 'Email', 'HW1', 'HW2',
-                            'HW3', 'Quiz1', 'Quiz2', 'Quiz3', 'Quiz4', 'MidtermExam', 'FinalExam',
-                             'FinalScore', 'FinalGrade'])
+            writer.writerow(['SID', 'Firs Name', 'Last Name', 'Email', 'HW1', 'HW2',
+                            'HW3', 'Quiz 1', 'Quiz 2', 'Quiz 3', 'Quiz 4', 'Midterm Exam', 'Final sExam',
+                             'Final Score', 'Final Grade'])
             for row_index in range(self.tableWidget.rowCount()):
                 row_data = []
                 for col_index in range(self.tableWidget.columnCount()):

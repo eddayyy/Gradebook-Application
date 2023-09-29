@@ -1,3 +1,5 @@
+# Author: Eduardo Nunez
+# Author email: eduardonunez.eng@gmail.com
 import sys
 from PyQt5 import QtWidgets
 
@@ -7,8 +9,8 @@ from gradebook import Gradebook
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
 
-    # style_sheet = load_stylesheet('./src/stylesheet.css')
-    app.setStyleSheet(style_sheet)
+    with open('src/stylesheet.css', mode='r') as css:
+        app.setStyleSheet(css.read())
 
     MainWindow = QtWidgets.QMainWindow()
     MainWindow.show()
