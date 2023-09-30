@@ -11,9 +11,9 @@ from PyQt5.QtWidgets import (
     QWidget,
     QHBoxLayout,
     QMessageBox,
-    QSplitter
+    QGridLayout
 )
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QIcon, QFont
 
 
 class StatisticalAnalysis:
@@ -30,25 +30,20 @@ class StatisticalAnalysis:
         central_widget = QWidget()
         main_layout = QVBoxLayout(central_widget)  # Main layout is vertical
 
-        # Create a Group Box for Control Panel
-        control_panel_group_box = QtWidgets.QGroupBox("Fields:")
-        control_panel_layout = QVBoxLayout(control_panel_group_box)
-        self.setupControlPanel(control_panel_layout)
-        # Control panel at the top
-        main_layout.addWidget(control_panel_group_box)
-
-        # Horizontal layout for statistics and graph
+        # Horizontal layout for statistics, graph, and drop down menu (combo box)
         horizontal_layout = QHBoxLayout()
 
         # Create a Group Box for Statistics Display
         statistics_display_group_box = QtWidgets.QGroupBox(
-            "Statistics Display")
-        statistics_display_layout = QVBoxLayout(statistics_display_group_box)
+            "Statistics")
+        statistics_display_layout = QVBoxLayout(
+            statistics_display_group_box)  # Sub layout is vertical
         self.setupStatisticsDisplay(statistics_display_layout)
+
         horizontal_layout.addWidget(statistics_display_group_box)
 
         # Create a Group Box for Graph Display
-        graph_display_group_box = QtWidgets.QGroupBox("Graph Display")
+        graph_display_group_box = QtWidgets.QGroupBox("Graph")
         graph_display_layout = QVBoxLayout(graph_display_group_box)
         self.setupGraphDisplay(graph_display_layout)
         horizontal_layout.addWidget(graph_display_group_box)
@@ -56,63 +51,73 @@ class StatisticalAnalysis:
         # Add horizontal layout to the main layout
         main_layout.addLayout(horizontal_layout)
 
-        # Set size policies to make widgets expandable
-        control_panel_group_box.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
-        statistics_display_group_box.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        graph_display_group_box.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-
-        # Optionally, use QSplitter for user-adjustable sizes between statistics and graph
-        splitter = QSplitter()
-        splitter.addWidget(statistics_display_group_box)
-        splitter.addWidget(graph_display_group_box)
-        horizontal_layout.addWidget(splitter)
-
         self.statAnalysis.setCentralWidget(central_widget)
 
     def initializeMainWindow(self):
         self.statAnalysis = QtWidgets.QMainWindow()
         self.statAnalysis.setObjectName('StatisticalAnalysisWindow')
-        self.statAnalysis.resize(1280, 960)
+        self.statAnalysis.setWindowIcon(
+            QIcon("./media/StatisticalAnalysis.png"))
+        self.statAnalysis.resize(1200, 700)
         self.statAnalysis.setWindowTitle('Statistical Analysis')
 
-    def setupControlPanel(self, control_panel_layout):
+    def setupStatisticsDisplay(self, statistics_display_layout):
+        # Create a QGridLayout
+        grid_layout = QGridLayout()
+
+        # Create and add a label and the QComboBox to the grid layout
+        self.fieldLabel = QLabel("Fields:")
         self.comboBox = QComboBox()
+        self.comboBox.setObjectName("comboBox")
         self.comboBox.addItems([
-            'HW1', 'HW2', 'HW3', 'Quiz1', 'Quiz2', 'Quiz3', 'Quiz4', 'MidtermExam', 'FinalExam'
+            'HW1', 'HW2', 'HW3', 'Quiz1', 'Quiz2', 'Quiz3', 'Quiz4', 'MidtermExam', 'FinalExam', 'Course Grades'
         ])
+
         self.comboBox.currentIndexChanged.connect(
             self.updateStatisticsAndGraph)
-        control_panel_layout.addWidget(self.comboBox)
+        grid_layout.addWidget(self.fieldLabel, 0, 0)  # Add to row 0, column 0
+        grid_layout.addWidget(self.comboBox, 0, 1)  # Add to row 0, column 1
 
-    def setupStatisticsDisplay(self, statistics_display_layout):
+        # Set up the statistics label
         self.statisticsLabel = QLabel()
-        font = QFont()
-        font.setPointSize(14)
-        self.statisticsLabel.setFont(font)
-        statistics_display_layout.addWidget(self.statisticsLabel)
+        self.statisticsLabel.setObjectName("statisticsLabel")
+        stat_font = QFont()
+        stat_font.setPointSize(16)
+        self.statisticsLabel.setFont(stat_font)
+        # Add the statistics label to the grid layout
+        # Add to row 1, span 2 columns
+        grid_layout.addWidget(self.statisticsLabel, 1, 0, 1, 2)
+
+        # Add the grid layout to the statistics display layout
+        statistics_display_layout.addLayout(grid_layout)
 
     def setupGraphDisplay(self, graph_display_layout):
         self.figure, self.ax = plt.subplots()
         self.canvas = FigureCanvas(self.figure)
         graph_display_layout.addWidget(self.canvas)
+        self.customizeGraphAppearance()
 
     # ------------------- Mathematical/Calculation Methods -------------------
 
     def updateStatisticsAndGraph(self):
+
         # Check if the table is empty
         if self.tableWidget.rowCount() == 0:
             QMessageBox.information(
                 self.statAnalysis, "No Data", "The table is empty. Please add data first.")
             return
-        column_index = self.comboBox.currentIndex() + 4
+
+        column_index = self.comboBox.currentIndex() + 5
+
+        if self.comboBox.currentText() == 'Course Grades':
+            column_index = self.comboBox.currentIndex() + 4
+
         self.updateStatistics(column_index)
         self.updateGraph(column_index)
 
     def updateStatistics(self, column_index):
         # Calculate statistics
+
         mean = self.calculateStats(column_index, 'mean')
         median = self.calculateStats(column_index, 'median')
         std = self.calculateStats(column_index, 'std')
@@ -121,24 +126,16 @@ class StatisticalAnalysis:
         missing_assignments = self.getMissingAssignments(column_index)
         minVal, maxVal = self.getMinMax(column_index)
 
-        # Set font size for the statistics label
-        font = QFont()
-        font.setPointSize(14)
-        self.statisticsLabel.setFont(font)
-
         # Structured and formatted statistics text
         statistics_text = (
-            f"<b>Statistics:</b><br>"
-            f"<table>"
-            f"<tr><td>Maximum Score:</td><td align='right'>{maxVal}</td></tr>"
-            f"<tr><td>Minimum Score:</td><td align='right'>{minVal}</td></tr>"
-            f"<tr><td>Mean:</td><td align='right'>{mean}</td></tr>"
-            f"<tr><td>Median:</td><td align='right'>{median}</td></tr>"
-            f"<tr><td>Standard Deviation:</td><td align='right'>{std}</td></tr>"
-            f"<tr><td>Passing:</td><td align='right'>{passing} ({passingRate})</td></tr>"
-            f"<tr><td>Failing:</td><td align='right'>{failing} ({failingRate})</td></tr>"
-            f"<tr><td>Missing Assignments:</td><td align='right'>{missing_assignments}</td></tr>"
-            f"</table>"
+            f"Maximum Score: {maxVal}\n"
+            f"Minimum Score:{minVal}\n"
+            f"Mean: {mean}\n"
+            f"Median: {median}\n"
+            f"Standard Deviation: {std}\n"
+            f"Passing: {passing} ({passingRate})\n"
+            f"Failing: {failing} ({failingRate})\n"
+            f"Missing Assignments: {missing_assignments}\n"
         )
 
         self.statisticsLabel.setText(statistics_text)
@@ -152,6 +149,7 @@ class StatisticalAnalysis:
         self.canvas.draw()
 
     def customizeGraphAppearance(self):
+        self.ax.clear()
         self.ax.set_title('Distribution of Student Grades',
                           fontsize=18, fontweight='bold', color='darkblue')
         self.ax.grid(True, linestyle='--', alpha=0.7)
@@ -161,13 +159,19 @@ class StatisticalAnalysis:
                            fontweight='bold', color='darkgreen')
         self.ax.tick_params(axis='both', which='major',
                             labelsize=10, colors='darkred')
-        self.ax.legend(loc='upper right')
+        self.ax.set_xlim([0, 100])  # Set x-axis limits to represent grades
+        # Set y-axis limits to represent student count
+        self.ax.set_ylim([0, 10])
+        self.canvas.draw()  # Draw the empty graph
 
     def calculateStats(self, column_index, stat_type):
         values = self.getValuesFromColumn(column_index)
         if not values:  # If the list is empty, return None
             return self.dataError
+
         stat_function = getattr(np, stat_type)
+        if column_index == self.tableWidget.columnCount() - 1:
+            return stat_function(values)
         return round(stat_function(values), 2)
 
     def passFailingRate(self, column_index):
@@ -198,8 +202,11 @@ class StatisticalAnalysis:
             item = self.tableWidget.item(row_index, column_index)
             if item and item.text():
                 try:
-                    value = float(item.text())
-                    values.append(value)
+                    if type(item.text()) != float:
+                        value = float(item.text())
+                        values.append(value)
+                    else:
+                        values.append(item.text())
                 except ValueError:
                     continue  # Skip non-numeric values
         return values
@@ -213,16 +220,17 @@ class StatisticalAnalysis:
         return missing
 
     def getMinMax(self, column_index):
-        minVal = float('inf')  # recall A-B Pruning
+        minVal = float('inf')
         maxVal = float('-inf')
-        temp = 0
         for row_index in range(self.tableWidget.rowCount()):
             item = self.tableWidget.item(row_index, column_index)
             if item and item.text():
                 try:
-                    temp = float(item.text())
-                    maxVal = max(temp, maxVal)
-                    minVal = min(temp, minVal)
+                    text_value = item.text().replace('%', '')  # Remove any percentage sign
+                    value = float(text_value)
+                    maxVal = max(value, maxVal)
+                    minVal = min(value, minVal)
+                    print(f'{value}\n')
                 except ValueError:  # Skip non-numeric values
                     continue
 
@@ -233,7 +241,7 @@ class StatisticalAnalysis:
         return minVal, maxVal
 
     def exportHistogram(self):
-        self.figure.savefig("./exports/student_data.png")
+        self.figure.savefig("./exports/StudentDataGraph.png")
 
     # ------------------- Display Methods -------------------
 

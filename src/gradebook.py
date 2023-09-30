@@ -1,8 +1,8 @@
 # Author: Eduardo Nunez
 # Author email: eduardonunez.eng@gmail.com
 import csv
-
 import numpy as np
+
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
@@ -113,7 +113,7 @@ class Gradebook(object):
             'SID', 'First Name', 'Last Name', 'Email',
             'HW 1', 'HW 2', 'HW 3', 'Quiz 1', 'Quiz 2',
             'Quiz 3', 'Quiz 4', 'Midterm Exam', 'Final Exam',
-            'Final Score', 'Final Grade'
+            'Percentage', 'Course Grade'
         ])
         self.tableWidget.setSelectionBehavior(
             QtWidgets.QAbstractItemView.SelectRows)
@@ -123,10 +123,7 @@ class Gradebook(object):
         # Table Modified
         self.tableWidget.itemChanged.connect(self.onItemChanged)
 
-        # Table Headers
-        bold_font = QFont()
-        bold_font.setBold(True)
-        self.tableWidget.horizontalHeader().setFont(bold_font)
+        self.tableWidget.horizontalHeader().setObjectName("TableHeader")
         self.tableWidget.horizontalHeader().sectionClicked.connect(self.sortColumns)
 
         main_layout.addWidget(self.tableWidget)
@@ -216,6 +213,12 @@ class Gradebook(object):
     # ------------------- Data Manipulation Methods -------------------
 
     def readIn(self):
+        '''
+        Instead of auto importing with "Student_data.csv" I chose to use PyQt's 
+        QFileDialog module to prompt the user with an input.
+        I believe that this works better for modularity and user experience
+        for users thaat want to have a flexible import feaature
+        '''
         options = QFileDialog.Options()
         filePath, _ = QFileDialog.getOpenFileName(
             None, "Open CSV", "", "CSV Files (*.csv);;All Files (*)", options=options)
@@ -251,7 +254,7 @@ class Gradebook(object):
                     will default to the '-' instead of the correct assignments.
 
                     Example of CSV Entry for Missing Assignments:
-                   edu, 12314,John,Doe,jdoe@univ.,,10,100,90,60,100,80,68
+                    12314,John,Doe,jdoe@univ.,,10,100,90,60,100,80,68
                     (Keep commas when there are missing assignments / leave it blank)
                     """
                     cell_value = col_data if col_data else '-'
@@ -396,15 +399,26 @@ class Gradebook(object):
 
     # ------------------- Search and Display Methods -------------------
 
-    def backupTable(self):
+    def backupTable(self, row_index=None):
         # Store the current state of the table
-        self.table_backup = []
-        for row_index in range(self.tableWidget.rowCount()):
-            row_data = {}
+        if row_index is None:
+            self.table_backup = []
+            for row_index in range(self.tableWidget.rowCount()):
+                row_data = {}
+                for col_index in range(self.tableWidget.columnCount()):
+                    item = self.tableWidget.item(row_index, col_index)
+                    row_data[col_index] = item.text() if item else ""
+                self.table_backup.append(row_data)
+        else:
+            row_data = {}  # Change this line to create a dictionary, not a list
             for col_index in range(self.tableWidget.columnCount()):
                 item = self.tableWidget.item(row_index, col_index)
-                row_data[col_index] = item.text() if item else ""
-            self.table_backup.append(row_data)
+                row_data[col_index] = item.text() if item else ''
+            # Ensure that the list is large enough
+            while len(self.table_backup) <= row_index:
+                self.table_backup.append({})
+            # This line will now work correctly
+            self.table_backup[row_index] = row_data
 
     def focusSearch(self, sid):
         self.backupTable()
@@ -438,7 +452,6 @@ class Gradebook(object):
     def searchBySID(self):
         sid = self.searchLineEdit.text()
         if not sid:
-
             QMessageBox.information(
                 self.tableWidget, "Student Search", "Please enter a Student ID (SID) to search.")
             return
@@ -451,6 +464,8 @@ class Gradebook(object):
         # Check if the changed item is in a grade column
         if item.column() in range(4, 13):  # Columns 4 to 12 inclusive are grade columns
             self.calculateStudentGrades()
+            if self.tableWidget.rowCount() == 1:
+                self.backupTable(row_index=item.row())
 
     def displaySearchClear(self):
         self.clearSearch.show()
