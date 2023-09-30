@@ -1,11 +1,18 @@
 # Author: Eduardo Nunez
 # Author email: eduardonunez.eng@gmail.com
 import matplotlib.pyplot as plt
-import numpy as np
-
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from PyQt5.QtWidgets import QComboBox, QVBoxLayout, QLabel, QWidget, QHBoxLayout, QMessageBox, QGridLayout, QSplitter
+import numpy as np
 from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QVBoxLayout,
+    QLabel,
+    QWidget,
+    QHBoxLayout,
+    QMessageBox,
+    QSplitter
+)
 from PyQt5.QtGui import QFont
 
 

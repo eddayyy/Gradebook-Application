@@ -1,82 +1,92 @@
-/*
-Author: Eduardo Nunez
-Author email: eduardonunez.eng@gmail.com
-*/
-/* Set global font */
+/* Global Styles */
+* {
+    font-family: "Roboto", "sans-serif";
+    color: #2C3E50;
+}
+
+/* Use a more soothing and modern color palette */
+:enabled {
+    color: #2C3E50;
+}
+
+:disabled {
+    color: #95A5A6;
+}
+
 /* Style for QPushButton */
-
-QAction {
-    font-family: "sans-serif";
-    font-size: 12px;
-    color: #333;
-}
-
-QHeaderView::section {
-    font-family: "sans-serif";
-    text-align: center;
-    border: 0.25px solid #000000;
-}
-
 QPushButton {
-    background-color: #1d5bb0;
-    border: none;
-    color: white;
+    background-color: #3498DB;
+    /* Blue Color */
+    color: #ECF0F1;
+    /* Off White Color */
     padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    margin: 4px 2px;
     border-radius: 4px;
+    border: none;
 }
 
 QPushButton:hover {
-    background-color: #626262;
-    /* Darker green */
+    background-color: #2980B9;
+    /* Darker Blue */
 }
 
 QPushButton:pressed {
-    background-color: #383f8e;
-    /* Even darker green */
-}
-
-/* Style for QLineEdit */
-QLineEdit {
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-QLineEdit:focus {
-    border: 1px solid #4c7aaf;
+    background-color: #1ABC9C;
+    /* Aqua Color */
 }
 
 /* Style for QComboBox */
 QComboBox {
     padding: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid #BDC3C7;
+    /* Grey Border */
     border-radius: 4px;
+    background: #ECF0F1;
+    /* Off White Background */
+    color: #2C3E50;
+    /* Blue Grey Text */
 }
 
+/* Sub-Menu Items of QComboBox */
 QComboBox QAbstractItemView {
-    border-color: #333;
+    border: 1px solid #BDC3C7;
+    background: #ECF0F1;
 }
 
+/* Style for QLineEdit */
+QLineEdit {
+    padding: 5px;
+    border: 1px solid #BDC3C7;
+    /* Grey Border */
+    border-radius: 4px;
+    background: #ECF0F1;
+    /* Off White Background */
+}
 
-/* Style for QLabel */
-QLabel {
-    color: #333;
+QLineEdit:focus {
+    border: 1px solid #3498DB;
+    /* Blue Border */
 }
 
 /* Style for QMessageBox */
 QMessageBox {
-    background: #fff;
+    background: #ECF0F1;
+    /* Off White Background */
 }
 
 QMessageBox QLabel {
-    color: #333;
     padding: 10px;
 }
 
-QMessageBox QPushButton {
-    min-width: 70px;
-    min-height: 30px;
+/* Style for Group Boxes */
+#StatisticsDisplayGroupBox,
+#GraphDisplayGroupBox {
+    border: 1px solid #BDC3C7;
+    margin-top: 10px;
+    border-radius: 4px;
+    background-color: #ECF0F1;
+}
+
+#StatisticsDisplayGroupBox QLabel,
+#GraphDisplayGroupBox QLabel {
+    padding-left: 10px;
 }

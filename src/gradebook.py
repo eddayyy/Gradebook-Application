@@ -42,7 +42,7 @@ class Gradebook(object):
         MainWindow.setCentralWidget(central_widget)
 
     def initializeMainWindow(self, MainWindow):
-        MainWindow.setWindowIcon(QIcon("./media/Gradebook2.png"))
+        MainWindow.setWindowIcon(QIcon("./media/MainWindow.png"))
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1920, 1080)
         MainWindow.setWindowTitle("Gradebook")
@@ -438,6 +438,7 @@ class Gradebook(object):
     def searchBySID(self):
         sid = self.searchLineEdit.text()
         if not sid:
+
             QMessageBox.information(
                 self.tableWidget, "Student Search", "Please enter a Student ID (SID) to search.")
             return
