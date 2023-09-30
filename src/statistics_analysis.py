@@ -107,10 +107,7 @@ class StatisticalAnalysis:
                 self.statAnalysis, "No Data", "The table is empty. Please add data first.")
             return
 
-        column_index = self.comboBox.currentIndex() + 5
-
-        if self.comboBox.currentText() == 'Course Grades':
-            column_index = self.comboBox.currentIndex() + 4
+        column_index = self.comboBox.currentIndex() + 4
 
         self.updateStatistics(column_index)
         self.updateGraph(column_index)
