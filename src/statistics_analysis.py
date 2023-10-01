@@ -1,6 +1,7 @@
 # Author: Eduardo Nunez
 # Author email: eduardonunez.eng@gmail.com
 
+import csv
 import statistics as st
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -13,7 +14,8 @@ from PyQt5.QtWidgets import (
     QWidget,
     QHBoxLayout,
     QMessageBox,
-    QGridLayout
+    QGridLayout,
+    QFileDialog
 )
 from PyQt5.QtGui import QIcon, QFont
 
@@ -250,6 +252,46 @@ class StatisticalAnalysis:
             return self.dataError
         return minVal, maxVal
 
+    def write_statistics_out(self):
+        if self.tableWidget.rowCount() != 0:
+            # Prompt user to save file
+            options = QFileDialog.Options()
+            save_file = QFileDialog.getSaveFileName(
+                None, "Save Statistics Data", '', "CSV Files (*.csv)", options=options
+            )
+
+            file_path = save_file[0] 
+
+            if not file_path:  # If no file name / path was provided
+                return
+            
+            with open(file_path, mode='w', newline='') as f:
+                writer = csv.writer(f)
+                
+                # Write the header row
+                writer.writerow(['Field', 'Maximum Score', 'Minimum Score', 'Mean', 'Standard Deviation', 'Median', 
+                                'Mode', 'Passing', 'Passing Rate', 'Failing', 'Failing Rate', 'Missing Assignments/Grades'])
+                
+                for index in range(self.comboBox.count()):
+                    self.comboBox.setCurrentIndex(index)
+                    column_index = index + 4
+                    self.updateStatistics(column_index)  # Update statistics before writing them out
+                    
+                    # Gather the statistics data
+                    field = self.comboBox.currentText()
+                    min_score, max_score = self.getMinMax(column_index)
+                    mean = self.calculateStats(column_index, 'mean')
+                    std = self.calculateStats(column_index, 'std')
+                    median = self.calculateStats(column_index, 'median')
+                    mode = self.calculateStats(column_index, 'mode')
+                    passing, failing, passing_rate, failing_rate = self.passFailingRate(column_index)
+                    missing_assignments = self.getMissingAssignments(column_index)
+                    
+                    # Write the row of statistics data
+                    writer.writerow([field, max_score, min_score, mean, std, median, mode, passing, passing_rate, 
+                                    failing, failing_rate, missing_assignments])
+
+        
     def exportHistogram(self):
         self.exportAllGraphs()
 
@@ -271,6 +313,8 @@ class StatisticalAnalysis:
                 self.statAnalysis, "No Data", "The table is empty. Please add data first.")
             return
     # ------------------- Display Methods -------------------
+
+
 
     def displayWindow(self):
         self.statAnalysis.show()
