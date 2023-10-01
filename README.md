@@ -2,7 +2,7 @@
 
 ## 🌟 Overview
 
-The Gradebook Application is a Python-based 🐍 software designed to assist educators in managing student grades efficiently. It aims to make the grading processes smooth, providing valuable insights into student and class performance through advanced data analysis. Please see documentation.md for more information regarding the implementation of the program. This repository was made public at 10:15 AM 10/01/2023.
+The Gradebook Application is a Python-based 🐍 software designed to assist educators in managing student grades efficiently. It aims to make the grading processes smooth, providing valuable insights into student and class performance through advanced data analysis. Please see documentation.md for more information regarding the implementation of the program. This repository was made public at 12:15 AM 10/01/2023.
 
 ## 🚀 Features
 
