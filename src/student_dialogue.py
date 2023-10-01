@@ -7,6 +7,7 @@ class StudentDialog(QDialog):
     def __init__(self, parent=None):
         super(StudentDialog, self).__init__(parent)
 
+        # Vertical Layout
         self.layout = QVBoxLayout(self)
 
         # Create form layout

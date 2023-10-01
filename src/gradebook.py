@@ -91,9 +91,9 @@ class Gradebook(object):
 
         # Search Text Entry
         self.searchLineEdit = QtWidgets.QLineEdit()
-        self.searchLineEdit.setAlignment(Qt.AlignLeft)  # Right-align text
+        self.searchLineEdit.setAlignment(Qt.AlignLeft)
         self.searchLineEdit.setLayoutDirection(
-            Qt.LeftToRight)  # Set layout direction to RTL
+            Qt.LeftToRight)
         self.searchLineEdit.returnPressed.connect(self.searchBySID)
         search_layout.addWidget(self.searchLineEdit)
 
@@ -106,8 +106,8 @@ class Gradebook(object):
         main_layout.addLayout(search_layout)
 
     def setupTable(self, main_layout):
-        # Table Data
         self.tableWidget = QtWidgets.QTableWidget()
+
         self.tableWidget.setColumnCount(15)
         self.tableWidget.setHorizontalHeaderLabels([
             'SID', 'First Name', 'Last Name', 'Email',
@@ -123,7 +123,8 @@ class Gradebook(object):
         # Table Modified
         self.tableWidget.itemChanged.connect(self.onItemChanged)
 
-        self.tableWidget.horizontalHeader().setObjectName("TableHeader")
+        self.tableWidget.horizontalHeader().setObjectName(
+            "TableHeader")  # For the stylesheet to reference
         self.tableWidget.horizontalHeader().sectionClicked.connect(self.sortColumns)
 
         main_layout.addWidget(self.tableWidget)
@@ -136,11 +137,13 @@ class Gradebook(object):
     def displayStats(self):
         self.statAnalysis.displayWindow()
         self.statAnalysis.statAnalysis.activateWindow()
+        # .rairse_() Will focus ("raise") the window when the "Statistical Analysis button is clicked"
         self.statAnalysis.statAnalysis.raise_()
 
     # ------------------- Mathematical/Calculation Methods -------------------
 
     def calculateStudentGrades(self):
+        # Iterate through students (rows) in the table
         for row_index in range(self.tableWidget.rowCount()):
             scores = self.retrieveScores(row_index)
             hw_average, quiz_average = self.calculateAverages(scores)
@@ -153,11 +156,11 @@ class Gradebook(object):
         scores = {'HW': [], 'Quiz': [], 'Midterm': 0, 'Final': 0}
 
         # For Homework and Quiz scores
-        for i in range(4, 11):  # Columns 4 to 10 inclusive
+        for i in range(4, 11):
             item = self.tableWidget.item(row_index, i)
             if item:
                 value = item.text()
-                if value:  # Check if the text is not empty
+                if value:
                     try:
                         value = float(value)
                         if i < 7:  # Columns 4, 5, 6 for HW
@@ -172,7 +175,7 @@ class Gradebook(object):
             item = self.tableWidget.item(row_index, col)
             if item:
                 value = item.text()
-                if value:  # Check if the text is not empty
+                if value:
                     try:
                         scores[key] = float(value)
                     except ValueError:
@@ -222,10 +225,11 @@ class Gradebook(object):
         options = QFileDialog.Options()
         filePath, _ = QFileDialog.getOpenFileName(
             None, "Open CSV", "", "CSV Files (*.csv)", options=options)
+
         if not filePath:  # If no file is selected, return
             return
 
-        # Confirmation message for the user to clear the Table when it's not empty
+        # Confirmation message for the user to clear the Table when it's populated
         if self.tableWidget.rowCount() != 0:
             msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Question)
@@ -241,7 +245,8 @@ class Gradebook(object):
 
         with open(filePath, mode='r') as f:
             csv_readin = csv.reader(f)
-            next(csv_readin)  # Skip the header row
+            # the reader returns an iterator so we kip the header row of the csv file
+            next(csv_readin)
             for row_index, row_data in enumerate(csv_readin):
                 self.tableWidget.insertRow(row_index)
                 for col_index, col_data in enumerate(row_data):
@@ -268,19 +273,20 @@ class Gradebook(object):
     def write_out(self):
         # Prompt user to save file
         options = QFileDialog.Options()
-        save_file = QFileDialog.getSaveFileName(  # Get the filepath and name
+        save_file = QFileDialog.getSaveFileName(
             None, "Save Student Data", '', "CSV Files (*.csv)", options=options
         )
 
-        file_path = save_file[0]
+        file_path = save_file[0]  # Contains the file path + name user chose
+
         if not file_path:  # If no file name / path was provided
             return
 
         with open(file_path, mode='w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['SID', 'Firs Name', 'Last Name', 'Email', 'HW1', 'HW2',
-                            'HW3', 'Quiz 1', 'Quiz 2', 'Quiz 3', 'Quiz 4', 'Midterm Exam', 'Final sExam',
-                             'Final Score', 'Final Grade'])
+            writer.writerow(['SID', 'First Name', 'Last Name', 'Email', 'HW1', 'HW2',
+                            'HW3', 'Quiz 1', 'Quiz 2', 'Quiz 3', 'Quiz 4', 'Midterm Exam', 'Final Exam',
+                             'Final Score', 'Final Grade'])  # Header/Labels
             for row_index in range(self.tableWidget.rowCount()):
                 row_data = []
                 for col_index in range(self.tableWidget.columnCount()):
@@ -290,10 +296,12 @@ class Gradebook(object):
         self.statAnalysis.exportHistogram()
 
     def addStudent(self):
+        # Instantiate the Student Dialog Class
         dialog = StudentDialog(self.tableWidget)
         result = dialog.exec_()
         if result == QDialog.Accepted:
             details_list = dialog.getDetails()
+
             row_position = self.tableWidget.rowCount()
             self.tableWidget.insertRow(row_position)
 
@@ -330,13 +338,15 @@ class Gradebook(object):
         msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
 
         returnValue = msgBox.exec()
-        if returnValue == QMessageBox.Yes:  # If user confirms, delete the student
+        if returnValue == QMessageBox.Yes:
             for index in sorted(select_indices, reverse=True):
-                # Remove from the table
                 self.tableWidget.removeRow(index.row())
-                # Remove from the backup (if present)
+                '''
+                If the user searched for and then deleted a student these lines will ensure 
+                that the student does not appear again when the search is cleared
+                '''
                 if self.table_backup:
-                    # Assuming SID is in the first column
+                    # SIDs are in the first column hence the 0
                     sid = self.table_backup[index.row()][0]
                     self.table_backup = [
                         student for student in self.table_backup if student[0] != sid]
@@ -367,6 +377,7 @@ class Gradebook(object):
 
         # Sort the items_with_index list based on the value.
         # If value is '-', treat it as negative infinity to ensure it goes to the end/beginning of the list depending on the sorting order.
+        # x[1] is the value whereas x[0] is the row_index
         items_with_index.sort(key=lambda x: float(
             '-inf') if x[1] == '-' else x[1], reverse=not is_ascending)
 
@@ -375,6 +386,7 @@ class Gradebook(object):
         sorted_rows = [None] * row_count
 
         # Populate the sorted_rows list with the items in their new sorted order.
+        # This ensures that all the student data will remain with that students' row
         for new_index, (row_index, _) in enumerate(items_with_index):
             # For each tuple in items_with_index, create a new list in sorted_rows at the index corresponding to its sorted position.
             sorted_rows[new_index] = []
@@ -410,14 +422,12 @@ class Gradebook(object):
                     row_data[col_index] = item.text() if item else ""
                 self.table_backup.append(row_data)
         else:
-            row_data = {}  # Change this line to create a dictionary, not a list
+            row_data = {}
             for col_index in range(self.tableWidget.columnCount()):
                 item = self.tableWidget.item(row_index, col_index)
                 row_data[col_index] = item.text() if item else ''
-            # Ensure that the list is large enough
             while len(self.table_backup) <= row_index:
                 self.table_backup.append({})
-            # This line will now work correctly
             self.table_backup[row_index] = row_data
 
     def focusSearch(self, sid):
@@ -464,6 +474,7 @@ class Gradebook(object):
         # Check if the changed item is in a grade column
         if item.column() in range(4, 13):  # Columns 4 to 12 inclusive are grade columns
             self.calculateStudentGrades()
+            # This line checks if a change occurred during an SID search
             if self.tableWidget.rowCount() == 1:
                 self.backupTable(row_index=item.row())
 

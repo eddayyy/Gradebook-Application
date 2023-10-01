@@ -21,7 +21,7 @@ from PyQt5.QtGui import QIcon, QFont
 class StatisticalAnalysis:
     def __init__(self, tableWidget):
         self.tableWidget = tableWidget
-        self.pltMin = 0
+        self.pltMin = 0  # initially the histograms x axis will start from 0
         self.setupUI()
 
     # ------------------- Setup/UI Initialization Methods -------------------
@@ -78,8 +78,9 @@ class StatisticalAnalysis:
 
         self.comboBox.currentIndexChanged.connect(
             self.updateStatisticsAndGraph)
-        grid_layout.addWidget(self.fieldLabel, 0, 0)  # Add to row 0, column 0
-        grid_layout.addWidget(self.comboBox, 0, 1)  # Add to row 0, column 1
+        # Put the field label and dropdown menu side-by-side
+        grid_layout.addWidget(self.fieldLabel, 0, 0)
+        grid_layout.addWidget(self.comboBox, 0, 1)
 
         # Set up the statistics label
         self.statisticsLabel = QLabel()
@@ -96,14 +97,19 @@ class StatisticalAnalysis:
 
     def setupGraphDisplay(self, graph_display_layout):
         self.figure, self.ax = plt.subplots()
+        # FigureCanvas allows for the graph to be placed on the Qt Window by adding it to the layout
         self.canvas = FigureCanvas(self.figure)
         graph_display_layout.addWidget(self.canvas)
+        # Create and setup Export All Graphs Button
+        self.exportAllGraphsButton = QtWidgets.QPushButton("Export All Graphs")
+        self.exportAllGraphsButton.clicked.connect(self.exportAllGraphs)
+        graph_display_layout.addWidget(self.exportAllGraphsButton)
+
         self.customizeGraphAppearance()
 
     # ------------------- Mathematical/Calculation Methods -------------------
 
     def updateStatisticsAndGraph(self):
-
         # Check if the table is empty
         if self.tableWidget.rowCount() == 0:
             QMessageBox.information(
@@ -152,7 +158,6 @@ class StatisticalAnalysis:
         self.canvas.draw()
 
     def customizeGraphAppearance(self):
-        # self.ax.clear()
         self.ax.set_title('Distribution of Student Grades',
                           fontsize=18, fontweight='bold', color='darkblue')
         self.ax.grid(True, linestyle='--', alpha=0.7)
@@ -166,9 +171,11 @@ class StatisticalAnalysis:
         self.ax.set_xlim([self.pltMin, 100])
         # Set y-axis limits to represent student count
         self.ax.set_ylim([0, 10])
-        self.canvas.draw()  # Draw the empty graph
+        self.canvas.draw()
 
     def calculateStats(self, column_index, stat_type):
+        # This function "dynamically" uses NumPy by taking advantage of the getattr function.
+        # instead of calling np.function we can pass in the func we want to call each time and simplify the code
         values = self.getValuesFromColumn(column_index)
         if not values:  # If the list is empty, return None
             return self.dataError
@@ -176,7 +183,7 @@ class StatisticalAnalysis:
         if stat_type == 'mode':
             return st.mode(values)  # calaculate mode
 
-        stat_function = getattr(np, stat_type)
+        stat_function = getattr(np, stat_type)  # "np.stat_type"
         return round(stat_function(values), 2)
 
     def passFailingRate(self, column_index):
@@ -203,7 +210,8 @@ class StatisticalAnalysis:
 
     def getValuesFromColumn(self, column_index):
         values = []
-        for row_index in range(self.tableWidget.rowCount()):
+        row_count = self.tableWidget.rowCount()
+        for row_index in range(row_count):
             item = self.tableWidget.item(row_index, column_index)
             if item and item.text():
                 # Strip the percentage sign from the text - specifically for column 13 (course percentage)
@@ -230,7 +238,7 @@ class StatisticalAnalysis:
             item = self.tableWidget.item(row_index, column_index)
             if item and item.text():
                 try:
-                    text_value = item.text().replace('%', '')  # Remove any percentage sign
+                    text_value = item.text().replace('%', '')  # Remove any percent sign
                     value = float(text_value)
                     maxVal = max(value, maxVal)
                     minVal = min(value, minVal)
@@ -243,8 +251,25 @@ class StatisticalAnalysis:
         return minVal, maxVal
 
     def exportHistogram(self):
-        self.figure.savefig("./exports/StudentDataGraph.png")
+        self.exportAllGraphs()
 
+    def exportAllGraphs(self):
+        if self.tableWidget.rowCount() != 0:
+            for index in range(self.comboBox.count()):
+                # Set the current index to update the graph and statistics
+                self.comboBox.setCurrentIndex(index)
+                # Update the graph and statistics based on the current index
+                self.updateStatisticsAndGraph()
+                # Get the current text of the ComboBox
+                column_name = self.comboBox.currentText()
+                # Create a unique file name based on the ComboBox text
+                file_name = f"./exports/graphs/{column_name}_Graph.png"
+                # Save the figure with the unique file name
+                self.figure.savefig(file_name)
+        else:
+            QMessageBox.information(
+                self.statAnalysis, "No Data", "The table is empty. Please add data first.")
+            return
     # ------------------- Display Methods -------------------
 
     def displayWindow(self):
