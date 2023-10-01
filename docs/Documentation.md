@@ -60,7 +60,7 @@ The CSV module comes pre-installed with Python, so there is no need to install i
 The CSV module is used to import and export student data, utilizing `csv.reader` and `csv.writer` classes for reading and writing to CSV files, respectively. This ensures smooth data management and sharing among users.
 
 
-## **[Sys](https://docs.python.org/2/library/sys.html)**
+## **[Sys](https://docs.python.org/3/library/sys.html)**
 
 #### **Introduction** 
 The `sys` module in Python provides access to some variables used or maintained by the interpreter and to functions that interact strongly with the interpreter. It is a part of the standard library.
@@ -122,3 +122,4 @@ The Matplotlib library was used to provide the user with a visual representation
 2. [Matplotlib.FigureCanvasQTAgg()](https://www.pythonguis.com/tutorials/plotting-matplotlib/)
     1. This function was imported as `FigureCanvas` and was used to convert the figure into a Qt Drawable object so that could be embedded into the application.
 
+## **[Features and Demo]()** 
