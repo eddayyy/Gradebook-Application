@@ -2,7 +2,7 @@
 
 ## 🌟 Overview
 
-The Gradebook Application is a Python-based 🐍 software designed to assist educators in managing student grades efficiently. It aims to make the grading processes smooth, providing valuable insights into student and class performance through advanced data analysis.
+The Gradebook Application is a Python-based 🐍 software designed to assist educators in managing student grades efficiently. It aims to make the grading processes smooth, providing valuable insights into student and class performance through advanced data analysis. Please see documentation.md for more information regarding the implementation of the program. 
 
 ## 🚀 Features
 
@@ -26,11 +26,11 @@ The Gradebook Application is a Python-based 🐍 software designed to assist edu
 1. Install Python from [Python's official website](https://www.python.org/downloads/).
 2. Clone the repository to your local machine.
    ```
-   git clone <https://github.com/eddayyy/RA-Assessment>
+   git clone https://github.com/eddayyy/RA-Assessment
    ```
 3. Navigate to the project directory.
    ```
-   cd your_repository/Gradebook
+   cd eddayyy/Gradebook
    ```
 4. Install the required packages.
    ```
