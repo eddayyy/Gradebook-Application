@@ -293,6 +293,7 @@ class Gradebook(object):
                     item = self.tableWidget.item(row_index, col_index)
                     row_data.append(item.text() if item else "")
                 writer.writerow(row_data)
+        self.statAnalysis.write_statistics_out()
         self.statAnalysis.exportHistogram()
 
     def addStudent(self):
