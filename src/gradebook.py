@@ -221,7 +221,7 @@ class Gradebook(object):
         '''
         options = QFileDialog.Options()
         filePath, _ = QFileDialog.getOpenFileName(
-            None, "Open CSV", "", "CSV Files (*.csv);;All Files (*)", options=options)
+            None, "Open CSV", "", "CSV Files (*.csv)", options=options)
         if not filePath:  # If no file is selected, return
             return
 

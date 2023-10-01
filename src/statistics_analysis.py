@@ -1,5 +1,7 @@
 # Author: Eduardo Nunez
 # Author email: eduardonunez.eng@gmail.com
+
+import statistics as st
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import numpy as np
@@ -19,6 +21,7 @@ from PyQt5.QtGui import QIcon, QFont
 class StatisticalAnalysis:
     def __init__(self, tableWidget):
         self.tableWidget = tableWidget
+        self.pltMin = 0
         self.setupUI()
 
     # ------------------- Setup/UI Initialization Methods -------------------
@@ -116,23 +119,26 @@ class StatisticalAnalysis:
         # Calculate statistics
 
         mean = self.calculateStats(column_index, 'mean')
-        median = self.calculateStats(column_index, 'median')
         std = self.calculateStats(column_index, 'std')
+        median = self.calculateStats(column_index, 'median')
+        mode = self.calculateStats(column_index, 'mode')
         passing, failing, passingRate, failingRate = self.passFailingRate(
             column_index)
         missing_assignments = self.getMissingAssignments(column_index)
         minVal, maxVal = self.getMinMax(column_index)
+        self.pltMin = minVal
 
         # Structured and formatted statistics text
         statistics_text = (
             f"Maximum Score: {maxVal}\n"
             f"Minimum Score:{minVal}\n"
             f"Mean: {mean}\n"
-            f"Median: {median}\n"
             f"Standard Deviation: {std}\n"
-            f"Passing: {passing} ({passingRate})\n"
-            f"Failing: {failing} ({failingRate})\n"
-            f"Missing Assignments: {missing_assignments}\n"
+            f"Median: {median}\n"
+            f"Mode:{mode}\n"
+            f"Passing: {passing} ({passingRate} of students)\n"
+            f"Failing: {failing} ({failingRate} of students)\n"
+            f"Missing Assignments/Grades: {missing_assignments}\n"
         )
 
         self.statisticsLabel.setText(statistics_text)
@@ -140,23 +146,24 @@ class StatisticalAnalysis:
     def updateGraph(self, column_index):
         self.ax.clear()
         values = self.getValuesFromColumn(column_index)
-        self.ax.hist(values, bins=10, color='skyblue',
+        self.ax.hist(values, bins=(10), color='skyblue',
                      edgecolor='black', label='Grades')
         self.customizeGraphAppearance()
         self.canvas.draw()
 
     def customizeGraphAppearance(self):
-        self.ax.clear()
+        # self.ax.clear()
         self.ax.set_title('Distribution of Student Grades',
                           fontsize=18, fontweight='bold', color='darkblue')
         self.ax.grid(True, linestyle='--', alpha=0.7)
         self.ax.set_xlabel('Student Grades', fontsize=16,
-                           fontweight='bold', color='darkgreen')
+                           fontweight='bold', color='black')
         self.ax.set_ylabel('Student Count', fontsize=16,
-                           fontweight='bold', color='darkgreen')
+                           fontweight='bold', color='black')
         self.ax.tick_params(axis='both', which='major',
                             labelsize=10, colors='darkred')
-        self.ax.set_xlim([0, 100])  # Set x-axis limits to represent grades
+        # Set x-axis limits to represent grades
+        self.ax.set_xlim([self.pltMin, 100])
         # Set y-axis limits to represent student count
         self.ax.set_ylim([0, 10])
         self.canvas.draw()  # Draw the empty graph
@@ -166,9 +173,10 @@ class StatisticalAnalysis:
         if not values:  # If the list is empty, return None
             return self.dataError
 
+        if stat_type == 'mode':
+            return st.mode(values)  # calaculate mode
+
         stat_function = getattr(np, stat_type)
-        if column_index == self.tableWidget.columnCount() - 1:
-            return stat_function(values)
         return round(stat_function(values), 2)
 
     def passFailingRate(self, column_index):
@@ -198,12 +206,11 @@ class StatisticalAnalysis:
         for row_index in range(self.tableWidget.rowCount()):
             item = self.tableWidget.item(row_index, column_index)
             if item and item.text():
+                # Strip the percentage sign from the text - specifically for column 13 (course percentage)
+                text_value = item.text().strip('%')
                 try:
-                    if type(item.text()) != float:
-                        value = float(item.text())
-                        values.append(value)
-                    else:
-                        values.append(item.text())
+                    value = float(text_value)  # Convert the text to a float
+                    values.append(value)
                 except ValueError:
                     continue  # Skip non-numeric values
         return values
@@ -227,14 +234,12 @@ class StatisticalAnalysis:
                     value = float(text_value)
                     maxVal = max(value, maxVal)
                     minVal = min(value, minVal)
-                    print(f'{value}\n')
                 except ValueError:  # Skip non-numeric values
                     continue
 
         # Return None if no numeric value is found in the column
         if minVal == float('inf') or maxVal == float('-inf'):
             return self.dataError
-
         return minVal, maxVal
 
     def exportHistogram(self):

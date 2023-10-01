@@ -24,7 +24,7 @@ PyQt5 is a set of Python bindings for Qt libraries which can be used to create m
 ```shell
 pip install PyQt5
 ```
-#### **Modules Usage**
+#### **Modules Used**
 In addition to rendering and formatting the GUI, PyQt5 also provided a robust table data structure that not only allowed student data to be displayed but modified, manipulated, replicated, and exported. This is thanks to PyQt5's QWidgets module. 
 
 - The following documentation was used to implement PyQt5 to the Gradebook program:
@@ -49,34 +49,76 @@ In addition to rendering and formatting the GUI, PyQt5 also provided a robust ta
 
 #### **Introduction** 
 
+The CSV module in Python provides functionality to both read from and write to CSV files, managing tabular data such as a spreadsheet or database. In the Gradebook program, it is used to handle student data.
+
 #### **Installation**
 
-#### **Usage**
+The CSV module comes pre-installed with Python, so there is no need to install it separately.
+
+#### **Modules Used**
+
+The CSV module is used to import and export student data, utilizing `csv.reader` and `csv.writer` classes for reading and writing to CSV files, respectively. This ensures smooth data management and sharing among users.
+
 
 ## **[Sys](https://docs.python.org/2/library/sys.html)**
 
 #### **Introduction** 
+The `sys` module in Python provides access to some variables used or maintained by the interpreter and to functions that interact strongly with the interpreter. It is a part of the standard library.
 
 #### **Installation**
+The `sys` module comes pre-installed with Python, so there is no need to install it separately.
 
-#### **Usage**
+#### **Modules Used**
+In the Gradebook program, the `sys` module is utilized in the main script to interact with the Python interpreter. Below is a breakdown of how the `sys` module is used in your main script:
 
-## **[NumPy](https://numpy.org/doc/stable/reference/generated/numpy.mean.html)**
+- `sys.argv`: This is used to get the list of command line arguments passed to the script. In this case, it is passed to the `QtWidgets.QApplication` constructor to initialize the Qt application object.
+- `sys.exit()`: This is used to exit the Python interpreter. In your script, it is used to exit the application when the Qt event loop ends.
+
+The main script sets up the Qt application, loads a stylesheet, creates the main window, initializes the Gradebook UI, and starts the Qt event loop. The `sys` module plays a crucial role in these operations, ensuring that the script can interact with the system and the Python interpreter properly.
+
+## **[NumPy](https://numpy.org/doc/stable/)**
 
 #### **Introduction** 
 
+NumPy is a comprehensive library for large, multi-dimensional arrays and matrices, providing high-level mathematical functions to operate on these arrays. It is used in this program for performing mathematical and logical operations on arrays.
+
 #### **Installation**
 
-#### **Usage**
+```shell
+pip install numpy
+```
 
-## **[Matplotlib](https://matplotlib.org/cheatsheets/_images/cheatsheets-1.png)**
+#### **Modules Used**
+
+NumPy is extensively used in gradebook.py and statistics_analysis.py files for operations like calculating mean and standard deviation.
+
+- The following functions were used to manipulate student data within the gradebook application: 
+1. [NumPy.mean()](https://numpy.org/doc/stable/reference/generated/numpy.mean.html)
+    1. This function was used in the Gradebook and StatisticalAnalysis classes to calculate the mean for student grades. This helped in displaying certain statistics 
+2. [NumPy.median()](https://numpy.org/doc/stable/reference/generated/numpy.std.html)
+    1. The median function was used in the StatisticalAnalysis class. This was displayed in the statistics display. 
+3. [NumPy.std()](https://numpy.org/doc/stable/reference/generated/numpy.median.html)
+    1. This function calculates the standard deviation and was used and displayed through the StatisticalAnalysis class. 
+
+## **[Matplotlib](https://matplotlib.org/stable/contents.html)**
 
 #### **Introduction** 
 
+Matplotlib is a plotting library for the Python programming language and its numerical mathematics extension, NumPy. It provides an object-oriented API for embedding plots into applications. 
+
 #### **Installation**
 
-#### **Usage**
+```shell
+pip install matplotlib
+```
 
-# Features and Demo
+#### **Modules and Usage**
 
-## Demo: 
+The Matplotlib library was used to provide the user with a visual representation of student data. I was able to embed the graph into the Qt application due to the FigureCanvasQtagg class. This allows the plots to be embedded and interact with the Qt GUI Application.
+
+- The following were used to create and embed the plot to the Qt Application
+1. [Matplotlib.pyplotsubplots()](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html)
+    1. This function was used for the creation of the figure and subplots that were used in the application
+2. [Matplotlib.FigureCanvasQTAgg()](https://www.pythonguis.com/tutorials/plotting-matplotlib/)
+    1. This function was imported as `FigureCanvas` and was used to convert the figure into a Qt Drawable object so that could be embedded into the application.
+
