@@ -30,7 +30,7 @@ The Gradebook Application is a Python-based 🐍 software designed to assist edu
    ```
 3. Navigate to the project directory.
    ```
-   cd your_repository/Gradebook
+   cd eddayyy/Gradebook
    ```
 4. Install the required packages.
    ```
