@@ -38,18 +38,7 @@ The Gradebook Application is a Python-based 🐍 software designed to assist edu
    ```
 5. Run the application.
    ```
-   python gradebook.py
-   ```
-
-## Running the Application
-
-1. If not already, navigate to the `Gradebook` directory in the project.
-   ```
-   cd your_folder/Gradebook
-   ```
-2. Run the application.
-   ```
-   python gradebook.py
+   python main.py
    ```
 
 ## 📜 License
