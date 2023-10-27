@@ -10,47 +10,18 @@
 
 ## Table of Contents
 1. [Overview](#-overview)
-2. [Features](#-features)
+2. [Features and Demo](#features-and-demo)
 3. [Setting up the Development Environment](#-setting-up-the-development-environment)
-4. [Features and Demo](#features-and-demo)
-5. [License](#-license)
+4. [License](#-license)
+
 
 
 ## 🌟 Overview
 
 The Gradebook Application is a Python-based 🐍 software designed to assist educators in managing student grades efficiently. It aims to make the grading processes smooth, providing valuable insights into student and class performance through advanced data analysis. Please see documentation.md for more information regarding the implementation of the program.
 
-## 🚀 Features
 
-1. **Manage Student Grades**:
-   - **Modify Student Grades**: Swiftly adjust and update student grades.
-   - **Sort Grades**: Organize student grades for quick insights.
-   - **Search for Students**: Use Student ID (SID) for efficient student searches.
 
-2. **Statistical Analysis**:
-   - Generate insights about class performance on specific assignments. (e.g., mean, median, standard deviation, missing assignments, minimum, and maximum scores).
-
-3. **Data Import/Export**:
-   - **Import Students**: Seamlessly import student data from CSV files.
-   - **Export Modified Data**: Easily export updated student data to a CSV file.
-
-4. **User-Friendly Interface**:
-   - Enjoy the intuitive interface which ensures ease of use for educators.
-
-## 🛠️ Setting up the Development Environment
-
-1. Install Python from [Python's official website](https://www.python.org/downloads/).
-
-1. **Clone the Repository**: 
-   - Use the command `git clone https://github.com/eddayyy/Gradebook-Application` to clone the repository.
-
-2. **Install Requirements**:
-   - Navigate to the project directory and run `pip install -r requirements.txt` to install necessary dependencies.
-
-4. **Run the application**:
-   ```
-   python main.py
-   ```
 ## **Features and Demo** 
 
 ### Feature 1: Import Student Data
@@ -120,6 +91,25 @@ The Gradebook Application is a Python-based 🐍 software designed to assist edu
     - **Screenshot:**
 
         ![Feature 9 Screenshot](./media/Confirmation.png)
+
+
+
+## 🛠️ Setting up the Development Environment
+
+1. Install Python from [Python's official website](https://www.python.org/downloads/).
+
+1. **Clone the Repository**: 
+   - Use the command `git clone https://github.com/eddayyy/Gradebook-Application` to clone the repository.
+
+2. **Install Requirements**:
+   - Navigate to the project directory and run `pip install -r requirements.txt` to install necessary dependencies.
+
+4. **Run the application**:
+   ```
+   python main.py
+   ```
+
+
 
 ## 📜 License
 
